@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import env from "../conf/env"
 import type { IUser } from "../types/IUser"
+import ColorPicker from "../components/ColorPicker"
 
 export default function ProfilePage() {
 
@@ -25,15 +26,26 @@ export default function ProfilePage() {
             }
         })()
     }, [navigate, userId])
-    
-    if(!user) {
+
+    if (!user) {
         navigate("/")
         return null
     }
 
+    const setUserColor = (color: string) => {
+        setUser({ ...user, accent_color: color })
+    }
+
     return (
-        <div>
-            {user.username}
+        <div className="pt-20 px-4">
+            <h1 className="text-2xl font-bold mb-4">Profile</h1>
+            <div className="mb-4">
+                {user.username}
+                <span className="text-sm text-gray-500"> ({user.email})</span>
+            </div>
+            <div className="text-sm text-gray-500">
+                <ColorPicker setColor={setUserColor} defaultColor={user.accent_color} />
+            </div>
         </div>
     )
 }

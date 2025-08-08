@@ -40,12 +40,13 @@ io.on('connection', (socket) => {
   socket.on('joinChannel', (channel_ids) => {
     socket.join(channel_ids);
     console.log(`User ${socket.id} joined channel ${channel_ids}`);
+    socket.emit('channelJoined', channel_ids); // Notify client
   });
 
   socket.on('message', (msg) => {
     createMessage(msg.content, msg.user.id, msg.channel_id);
     console.log(msg)
-
+    
     // Emit to everyone in the room except sender
     socket.to(msg.channel_id).emit('message', msg);
   });

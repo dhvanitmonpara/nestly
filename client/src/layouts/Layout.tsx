@@ -54,13 +54,18 @@ function Layout() {
     //   })
     // }
 
-    const channelIds = channels.map(c => c.id)
+    socket.socket.on("channelJoined", (channelId) => {
+      console.log(`✅ Joined channel: ${channelId}`);
+    });
+
+    const channelIds = channels.map(c => c.id.toString())
     socket.socket.emit("joinChannel", channelIds)
     // socket.socket.on("message", handleIncomingMessage)
 
     return () => {
       if (socket.socket) {
         // socket.socket.off("message", handleIncomingMessage)
+        socket.socket.off("channelJoined");
       }
     }
   }, [channels, socket])
