@@ -7,11 +7,11 @@ import useSocket from "../socket/useSocket"
 import useUserStore from "../store/userStore"
 import type { IMessage } from "../types/IMessage"
 import type { IChannel } from "../types/IChannel"
+import formatTimestamp from "../utils/formatTimeStampt"
 
 function ChatPage() {
   const [channel, setChannel] = useState<IChannel | null>(null)
   const [loading, setLoading] = useState(false)
-  const [typingUsers, setTypingUsers] = useState<string[]>([])
 
   const user = useUserStore(s => s.user)
   const socket = useSocket()
@@ -60,7 +60,7 @@ function ChatPage() {
         id: Date.now().toString(),
         content: data.content,
         user: data.user,
-        channel_id: channelId
+        channel_id: channelId,
       };
 
       setChannel((prev) => {
@@ -74,24 +74,6 @@ function ChatPage() {
       })
     };
 
-    const handleUserTyping = (username: string, channel_id: string) => {
-      if (channel_id === channelId) {
-        setTypingUsers((prev) =>
-          prev.includes(username) ? prev : [...prev, username]
-        )
-      }
-    }
-
-    const handleUserStopTyping = (username: string, channel_id: string) => {
-      if (channel_id === channelId) {
-        setTypingUsers((prev) => prev.filter((id) => id !== username))
-      }
-    }
-
-    s.on("user_typing", ({ username, channelId }) => handleUserTyping(username, channelId))
-
-    s.on("user_stop_typing", ({ username, channelId }) => handleUserStopTyping(username, channelId))
-
     s.on("connect", () => {
       console.log("Socket connected:", s.id);
     });
@@ -100,8 +82,6 @@ function ChatPage() {
 
     return () => {
       s.off("message", handleMessage);
-      s.off("user_typing")
-      s.off("user_stop_typing")
       s.off("disconnect");
     };
   }, [channelId, socket]);
@@ -122,22 +102,17 @@ function ChatPage() {
               const color = `#${chat.user?.accent_color}`
               return <div className="my-2 mx-6" key={chat.id}>
                 <p
-                  style={{
+                  className={`text-sm flex justify-between items-center`}
+                >
+                  <span style={{
                     color: color
-                  }}
-                  className={`text-sm ${color}`}
-                >{chat.user?.username || "Unknown"}</p>
+                  }}>{chat.user?.username || "Unknown"}</span>
+                  <span className="text-[0.70rem] text-zinc-500">{chat.createdAt ? formatTimestamp(chat.createdAt) : ""}</span>
+                </p>
                 <p className="text-zinc-200">{chat.content}</p>
               </div>
             })
           )}
-          <div className="text-sm text-zinc-400 px-4 pb-2">
-            {typingUsers.length > 0 &&
-              `${typingUsers.length === 1
-                ? typingUsers[0] + " is typing..."
-                : typingUsers.join(", ") + " are typing..."}`
-            }
-          </div>
         </div>
       </div>
       <SendMessage setChannel={setChannel} />
@@ -149,6 +124,7 @@ function ChatPage() {
 const SendMessage = ({ setChannel }: { setChannel: React.Dispatch<React.SetStateAction<IChannel | null>> }) => {
   const [message, setMessage] = useState("")
   const [isTyping, setIsTyping] = useState(false)
+  const [typingUsers, setTypingUsers] = useState<string[]>([])
 
   let typingTimeout: NodeJS.Timeout
 
@@ -222,8 +198,43 @@ const SendMessage = ({ setChannel }: { setChannel: React.Dispatch<React.SetState
     }, 2000) // 2 seconds after last keypress
   }
 
+  useEffect(() => {
+    if (!socket.socket) return
+    const s = socket.socket
+
+    const handleUserTyping = (username: string, channel_id: string) => {
+      if (channel_id === channelId) {
+        setTypingUsers((prev) =>
+          prev.includes(username) ? prev : [...prev, username]
+        )
+      }
+    }
+
+    const handleUserStopTyping = (username: string, channel_id: string) => {
+      if (channel_id === channelId) {
+        setTypingUsers((prev) => prev.filter((id) => id !== username))
+      }
+    }
+
+    s.on("user_typing", ({ username, channelId }) => handleUserTyping(username, channelId))
+
+    s.on("user_stop_typing", ({ username, channelId }) => handleUserStopTyping(username, channelId))
+
+    return () => {
+      s.off("user_typing")
+      s.off("user_stop_typing")
+    }
+  }, [channelId, socket.socket])
+
   return (
     <div className="fixed bottom-0 right-4 w-[calc(100vw-290px)]">
+      <div className={`text-xs text-zinc-900 bg-violet-500 rounded-t-sm mx-3 px-3 py-1 transition-all duration-100 ${typingUsers.length > 0 ? "translate-y-0" : "translate-y-20"}`}>
+        {typingUsers.length > 0 &&
+          `${typingUsers.length === 1
+            ? typingUsers[0] + " is typing..."
+            : typingUsers.join(", ") + " are typing..."}`
+        }
+      </div>
       <form onSubmit={handleSubmit} className="relative pb-4 bg-zinc-900">
         <input onChange={handleTyping} value={message} type="text" placeholder="Type a message" className="w-full py-2 px-4 bg-zinc-800 rounded-md" />
         <button type="submit" className="bg-zinc-700 hover:bg-zinc-600 text-zinc-100 font-semibold px-3 py-2 rounded-md absolute right-0 cursor-pointer">
