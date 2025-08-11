@@ -5,7 +5,7 @@ import type { AxiosError } from "axios"
 import axios from "axios"
 import env from "../conf/env"
 import { toast } from "sonner"
-import type { IChannel } from "../types/IChannel"
+import type { IChannel } from "../types/IServer"
 import { Loader2 } from "lucide-react"
 import useUserStore from "../store/userStore"
 

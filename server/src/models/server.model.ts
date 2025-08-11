@@ -1,8 +1,8 @@
 import { DataTypes } from "sequelize"
 import { sequelize } from "../db/connect"
-import Server from "./server.model"
+import User from "./user.model"
 
-const Channel = sequelize.define("channels", {
+const Server = sequelize.define("servers", {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
@@ -12,18 +12,14 @@ const Channel = sequelize.define("channels", {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  server_id: {
+  owner_id: {
     type: DataTypes.INTEGER,
     references: {
-      model: Server,
+      model: User,
       key: "id"
     },
     allowNull: false,
   },
-  type: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
 })
 
-export default Channel
+export default Server

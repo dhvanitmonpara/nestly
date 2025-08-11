@@ -13,7 +13,7 @@ import type { AxiosError } from "axios";
 import axios from "axios";
 import env from "../conf/env";
 import { toast } from "sonner";
-import useChannelStore from "../store/channelStore";
+import useChannelStore from "../store/serverStore";
 import { useState } from "react";
 import { FaShare } from "react-icons/fa";
 
@@ -24,20 +24,20 @@ function ChannelCard({ id, name, isOwner = false }: { id: number, name: string, 
     const [editInput, setEditInput] = useState("")
 
     const { handleAuthError } = useHandleAuthError()
-    const removeChannel = useChannelStore(s => s.removeChannel)
+    const removeServer = useChannelStore(s => s.removeServer)
     const navigate = useNavigate()
 
-    const handleDeleteChannel = async () => {
-        const toastId = toast.loading(`Deleting the channel ${name}`)
+    const handleDeleteServer = async () => {
+        const toastId = toast.loading(`Deleting the server ${name}`)
         try {
-            const res = await axios.delete(`${env.SERVER_ENDPOINT}/channels/delete/${id.toString()}`, { withCredentials: true })
+            const res = await axios.delete(`${env.SERVER_ENDPOINT}/servers/delete/${id.toString()}`, { withCredentials: true })
 
             if (res.status !== 200) {
-                toast.error("Failed to delete the channel")
+                toast.error("Failed to delete the server")
                 return
             }
 
-            removeChannel(id)
+            removeServer(id)
             navigate("/")
 
         } catch (error) {
@@ -58,7 +58,7 @@ function ChannelCard({ id, name, isOwner = false }: { id: number, name: string, 
                 return
             }
 
-            removeChannel(id)
+            removeServer(id)
 
         } catch (error) {
             handleAuthError(error as AxiosError)
@@ -112,11 +112,11 @@ function ChannelCard({ id, name, isOwner = false }: { id: number, name: string, 
                         <span className="text-sm font-semibold text-zinc-300">Share</span>
                     </DropdownMenuItem>
                     {isOwner
-                        ? <DropdownMenuItem onClick={handleDeleteChannel} variant="destructive" className="text-zinc-300 flex justify-start items-center space-x-1">
+                        ? <DropdownMenuItem onClick={handleDeleteServer} variant="destructive" className="text-zinc-300 flex justify-start items-center space-x-1">
                             <MdDelete />
                             <span className="text-sm font-semibold">Delete</span>
                         </DropdownMenuItem>
-                        : <DropdownMenuItem onClick={handleDeleteChannel} variant="destructive" className="text-zinc-300 flex justify-start items-center space-x-1">
+                        : <DropdownMenuItem onClick={handleDeleteServer} variant="destructive" className="text-zinc-300 flex justify-start items-center space-x-1">
                             <MdDelete />
                             <span className="text-sm font-semibold">Leave</span>
                         </DropdownMenuItem>

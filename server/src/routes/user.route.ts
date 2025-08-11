@@ -9,6 +9,7 @@ import {
   sendOtp,
   verifyOtp,
   getUserById,
+  updateUser,
 } from "../controllers/user.controller";
 import { verifyUserJWT } from "../middlewares/auth.middleware";
 
@@ -20,6 +21,7 @@ router.route("/me").get(verifyUserJWT, getUserData);
 router.route("/id/:userId").get(verifyUserJWT, getUserById);
 router.route("/login").post(loginUser);
 router.route("/logout").post(verifyUserJWT, logoutUser);
+router.route("/update").put(verifyUserJWT, updateUser);
 router.route("/refresh").post(refreshAccessToken);
 router.route("/otp/send").post(sendOtp);
 router.route("/otp/verify").post(verifyOtp);

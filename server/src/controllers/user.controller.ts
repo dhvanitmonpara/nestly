@@ -350,6 +350,27 @@ export const sendOtp = async (req: Request, res: Response) => {
   }
 };
 
+export const updateUser = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) throw new ApiError(401, "Unauthorized request");
+    const user = await User.findByPk(req.user.id);
+    if (!user) throw new ApiError(404, "User not found");
+
+    const { accent_color } = req.body;
+
+    const updatedUser = await User.update(
+      { accent_color },
+      { where: { id: req.user.id } },
+    );
+
+    if (!updatedUser) throw new ApiError(404, "User not found");
+
+    res.status(200).json({ message: "User updated successfully", data: updatedUser });
+  } catch (error) {
+    handleError(error as ApiError, res, "Failed to update user", "UPDATE_USER_ERROR");
+  }
+};
+
 const OtpVerifier = async (
   email: string,
   otp: string,

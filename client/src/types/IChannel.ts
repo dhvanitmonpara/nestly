@@ -1,17 +1,9 @@
-import type { IUser } from "./IUser";
+import type { IMessage } from "./IMessage";
 
 interface IChannel {
-  id: number;
-  name: string;
-  owner_id: string
-}
+    id: number;
+    name: string;
+    messages: IMessage[];
+};
 
-type IChannelWithMessage = IChannel & {
-  messages: {
-    id: string
-    content: string
-    user: IUser
-  }[]
-}
-
-export type { IChannel, IChannelWithMessage };
+export type { IChannel }

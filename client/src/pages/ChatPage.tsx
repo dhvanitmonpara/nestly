@@ -5,15 +5,15 @@ import env from "../conf/env"
 import { toast } from "sonner"
 import useSocket from "../socket/useSocket"
 import useUserStore from "../store/userStore"
-import type { IMessageWithUser } from "../types/IMessage"
-import type { IChannelWithMessage } from "../types/IChannel"
+import type { IMessage } from "../types/IMessage"
+import type { IServer } from "../types/IServer"
 
 function ChatPage() {
 
-  const [channel, setChannel] = useState<IChannelWithMessage | null>(null)
+  const [server, setServer] = useState<IServer | null>(null)
   const [loading, setLoading] = useState(false)
 
-  const channelId = useParams().channelId
+  const serverId = useParams().serverId
   const user = useUserStore(s => s.user)
   const socket = useSocket()
   const navigate = useNavigate()
@@ -23,20 +23,20 @@ function ChatPage() {
 
       setLoading(true)
 
-      if (!channelId || !user) {
+      if (!serverId || !user) {
         navigate("/")
         return
       }
 
       try {
-        const res = await axios.get(`${env.SERVER_ENDPOINT}/messages/chat/${user.id}/${channelId}`, { withCredentials: true })
+        const res = await axios.get(`${env.SERVER_ENDPOINT}/messages/chat/${user.id}/${serverId}`, { withCredentials: true })
 
         if (!res.data) {
           navigate("/")
           return
         }
 
-        setChannel(res.data.channel)
+        setServer(res.data.server)
 
       } catch (error) {
         console.log(error)
@@ -44,14 +44,14 @@ function ChatPage() {
         setLoading(false)
       }
     })()
-  }, [channelId, navigate, user])
+  }, [serverId, navigate, user])
 
   useEffect(() => {
     if (!socket.socket) return;
 
     const s = socket.socket;
 
-    const handleMessage = (data: IMessageWithUser) => {
+    const handleMessage = (data: IMessage) => {
       console.log('Received message:', data);
       const newMessage = {
         id: Date.now().toString(),
@@ -59,14 +59,14 @@ function ChatPage() {
         user: data.user,
       };
 
-      setChannel((prev) => {
+      setServer((prev) => {
         return {
           ...prev,
-          messages: prev ? [
-            ...prev.messages,
+          channels: prev ? [
+            ...prev.channels,
             newMessage
           ] : newMessage
-        } as IChannelWithMessage
+        } as IServer
       })
     };
 
@@ -86,14 +86,14 @@ function ChatPage() {
       <div className="h-full">
         <div className="sticky top-0 bg-zinc-900 px-4 pt-4">
           <h1 className="w-full h-12 bg-zinc-800 px-4 rounded-md flex justify-start items-center">
-            {channel?.name ?? "Loading..."}
+            {server?.name ?? "Loading..."}
           </h1>
         </div>
         <div className="px-4 pt-10 pb-60">
           {loading ? (
             <h2>Loading...</h2>
           ) : (
-            channel?.messages.map((chat) => {
+            server?.channels.map((chat) => {
               const color = `#${chat.user.accent_color}`
               return <div className="my-2 mx-6" key={chat.id}>
                 <p
@@ -108,7 +108,7 @@ function ChatPage() {
           )}
         </div>
       </div>
-      <SendMessage setChannel={setChannel} />
+      <SendMessage setServer={setServer} />
     </div>
   )
 }

@@ -1,9 +1,9 @@
 import { DataTypes } from "sequelize"
 import User from "./user.model"
-import Channel from "./channel.model"
 import { sequelize } from "../db/connect"
+import Server from "./server.model"
 
-const ChannelMembers = sequelize.define("channel-members", {
+const Member = sequelize.define("members", {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
@@ -17,14 +17,14 @@ const ChannelMembers = sequelize.define("channel-members", {
     },
     allowNull: false,
   },
-  channel_id: {
+  server_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-        model: Channel,
+        model: Server,
         key: "id"
     }
   }
 })
 
-export default ChannelMembers
+export default Member

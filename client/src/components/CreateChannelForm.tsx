@@ -1,4 +1,4 @@
-import { FaPlus } from "react-icons/fa"
+import { FiPlus } from "react-icons/fi"
 import {
     Dialog,
     DialogContent,
@@ -6,30 +6,38 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-} from "../components/ui/dialog"
+} from "./ui/dialog"
 import InputBox from "./InputBox"
 import { useForm, type SubmitHandler } from "react-hook-form"
 import { toast } from "sonner"
 import axios from "axios"
 import env from "../conf/env"
 import useUserStore from "../store/userStore"
-import { useNavigate } from "react-router-dom"
-import useChannelStore from "../store/channelStore"
+import { useNavigate, useParams } from "react-router-dom"
+import useChannelStore from "../store/serverStore"
 import { useState } from "react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 type ChannelDataType = {
-    identifier: string
+    name: string
+    type: "text" | "voice"
 }
 
 function CreateChannelForm() {
 
     const [open, setOpen] = useState(false)
-    const [mode, setMode] = useState<"create" | "join">("create")
 
     const user = useUserStore(s => s.user)
-    const addChannel = useChannelStore(s => s.addChannel)
+    const addServer = useChannelStore(s => s.addServer)
     const navigate = useNavigate()
+
+    const { serverId } = useParams()
 
     const {
         register,
@@ -43,8 +51,8 @@ function CreateChannelForm() {
         try {
             setOpen(false)
 
-            if (!data.identifier) {
-                toast.info(`Channel ${mode === "create" ? "name" : "ID"} cannot be empty`)
+            if (!data.name) {
+                toast.info(`Channel name cannot be empty`)
                 return
             }
 
@@ -53,85 +61,70 @@ function CreateChannelForm() {
                 return
             }
 
-            if (mode === "create") {
-                const res = await axios.post(`${env.SERVER_ENDPOINT}/channels/create`, {
-                    name: data.identifier,
-                    owner_id: user.id
-                }, { withCredentials: true })
-
-                if (res.status !== 200) {
-                    toast.error("Failed to create a channel")
-                    return
-                }
-
-                addChannel(res.data.channel)
-            } else {
-                navigate(`/join/c/${data.identifier}`)
+            if (!serverId) {
+                navigate("/")
+                return
             }
-            
+
+            const res = await axios.post(`${env.SERVER_ENDPOINT}/channels/create`, {
+                name: data.name,
+                server_id: serverId
+            }, { withCredentials: true })
+
+            if (res.status !== 200) {
+                toast.error("Failed to create a channel")
+                return
+            }
+
+            addServer(res.data.server)
+
         } catch (error) {
             console.error(error)
             toast.error("Failed to create a channel")
         } finally {
             toast.dismiss(toastId)
-            setValue("identifier", "")
+            setValue("name", "")
         }
     }
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger className="p-3 text-xl cursor-pointer transition-colors duration-300 text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800 rounded-full">
-                <FaPlus />
+            <DialogTrigger className="text-sm flex justify-start items-center space-x-2 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-700/50 rounded-md px-3 py-2 mb-4 w-full cursor-pointer" onClick={() => setOpen(true)}>
+                <FiPlus />
+                <span className="font-semibold">
+                    Create Channel
+                </span>
             </DialogTrigger>
             <DialogContent className="bg-zinc-900 text-zinc-100 border-zinc-800 !max-w-96">
-                <Tabs value={mode} onValueChange={v => setMode(v as ("create" | "join"))} defaultValue="create">
-                    <TabsList className="mb-4">
-                        <TabsTrigger value="create">Create</TabsTrigger>
-                        <TabsTrigger value="join">Join</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="create" className="space-y-4">
-                        <DialogHeader>
-                            <DialogTitle>Create Channel</DialogTitle>
-                            <DialogDescription>
-                                Create a channel and invite your friends.
-                            </DialogDescription>
-                        </DialogHeader>
-                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                            <InputBox
-                                error={errors.identifier?.message}
-                                id="name"
-                                label="Name"
-                                key="name"
-                                placeholder="Enter Channel name"
-                                {...register("identifier")}
-                            />
-                            <button type="submit" className="px-4 py-2 bg-zinc-200 text-zinc-900 font-semibold w-full rounded-md hover:bg-zinc-300 cursor-pointer disabled:opacity-60">
-                                Create a channel
-                            </button>
-                        </form>
-                    </TabsContent>
-                    <TabsContent value="join" className="space-y-4">
-                        <DialogHeader>
-                            <DialogTitle>Join Channel</DialogTitle>
-                            <DialogDescription>
-                                Join the channel by typing the id of it.
-                            </DialogDescription>
-                        </DialogHeader>
-                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                            <InputBox
-                                error={errors.identifier?.message}
-                                id="id"
-                                label="Unique ID"
-                                key="id"
-                                placeholder="Enter Channel ID"
-                                {...register("identifier")}
-                            />
-                            <button type="submit" className="px-4 py-2 bg-zinc-200 text-zinc-900 font-semibold w-full rounded-md hover:bg-zinc-300 cursor-pointer disabled:opacity-60">
-                                Join a channel
-                            </button>
-                        </form>
-                    </TabsContent>
-                </Tabs>
+                <DialogHeader>
+                    <DialogTitle>Create Channel</DialogTitle>
+                    <DialogDescription>
+                        Create a channel and invite your friends.
+                    </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                    <InputBox
+                        error={errors.name?.message}
+                        id="name"
+                        label="Name"
+                        key="name"
+                        placeholder="Enter Server name"
+                        {...register("name")}
+                    />
+                    <Select>
+                        <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Theme" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="light">Light</SelectItem>
+                            <SelectItem value="dark">Dark</SelectItem>
+                            <SelectItem value="system">System</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <button type="submit" className="px-4 py-2 bg-zinc-200 text-zinc-900 font-semibold w-full rounded-md hover:bg-zinc-300 cursor-pointer disabled:opacity-60">
+                        Create a channel
+                    </button>
+                </form>
             </DialogContent>
         </Dialog>
 

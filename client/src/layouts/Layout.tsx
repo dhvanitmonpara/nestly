@@ -4,45 +4,44 @@ import { Link, Outlet, useParams } from "react-router-dom"
 import useUserStore from "../store/userStore"
 import ProfileButton from "../components/ProfileButton"
 import env from "../conf/env"
-import CreateChannelForm from "../components/CreateChannelForm"
-import useChannelStore from "../store/channelStore"
-import ChannelCard from "../components/ChannelCard"
+import CreateChannelForm from "../components/CreateServerForm"
+import useServerStore from "../store/serverStore"
 import useHandleAuthError from "../hooks/useHandleAuthError"
 import { Toaster } from "sonner"
 import useSocket from "../socket/useSocket"
-import type { IMessageWithUser } from "../types/IMessage"
-import type { IChannelWithMessage } from "../types/IChannel"
+import ServerIcon from "../components/ServerIcon"
+import Channels from "../components/Channels"
 
 function Layout() {
 
   const user = useUserStore(s => s.user)
-  const channels = useChannelStore(s => s.channels)
-  const setChannels = useChannelStore(s => s.setChannels)
+  const servers = useServerStore(s => s.servers)
+  const setServers = useServerStore(s => s.setServers)
   const socket = useSocket()
-  const { channelId } = useParams()
+  const { serverId } = useParams()
 
   const { handleAuthError } = useHandleAuthError()
 
-  const fetchChannels = useCallback(async () => {
+  const fetchServers = useCallback(async () => {
     try {
       if (!user) return
-      const channels = await axios.get(`${env.SERVER_ENDPOINT}/channels/joined/${user.id}`, { withCredentials: true })
-      setChannels(channels.data.channels)
+      const servers = await axios.get(`${env.SERVER_ENDPOINT}/servers/joined/${user.id}`, { withCredentials: true })
+      setServers(servers.data.servers)
     } catch (error) {
       handleAuthError(error as AxiosError)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setChannels, user])
+  }, [setServers, user])
 
   useEffect(() => {
-    fetchChannels()
-  }, [fetchChannels])
+    fetchServers()
+  }, [fetchServers])
 
   useEffect(() => {
-    if (!socket.connected || !socket.socket || !channels) return
+    if (!socket.connected || !socket.socket || !servers) return
 
     // const handleIncomingMessage = (message: IMessageWithUser) => {
-    //   if (channelId) return
+    //   if (serverId) return
     //   setChannels((prev) => {
     //     return {
     //       ...prev,
@@ -58,7 +57,7 @@ function Layout() {
       console.log(`✅ Joined channel: ${channelId}`);
     });
 
-    const channelIds = channels.map(c => c.id.toString())
+    const channelIds = servers.flatMap(s => s?.channels?.map(c => c.id.toString()))
     socket.socket.emit("joinChannel", channelIds)
     // socket.socket.on("message", handleIncomingMessage)
 
@@ -68,22 +67,23 @@ function Layout() {
         socket.socket.off("channelJoined");
       }
     }
-  }, [channels, socket])
+  }, [servers, socket])
 
   return (
     <div>
       <div className="flex w-full h-screen max-h-screen overflow-hidden bg-zinc-900 text-zinc-100">
+        <section className="p-1 space-y-1">
+          {servers.length > 0 && servers.map(({ id, name, owner_id }) => (
+            <ServerIcon id={id} key={id} name={name} isOwner={owner_id?.toString() === user?.id.toString()} />
+          ))}
+          <CreateChannelForm />
+        </section>
         <div className="w-[250px] py-6 px-4 bg-zinc-800/50">
           <h3 className="flex justify-between items-center">
-            <Link className="text-2xl font-semibold" to="/">TechyScord</Link>
-            <CreateChannelForm />
+            <Link className="text-xl font-semibold" to="/">{servers.find(s => s.id.toString() === serverId)?.name || "TechyScord"}</Link>
           </h3>
           <input type="text" placeholder="Search a channel" className="my-4 w-full py-2 px-4 bg-zinc-700/50 rounded-md" />
-          <section>
-            {channels.length > 0 && channels.map(({ id, name, owner_id }) => (
-              <ChannelCard id={id} key={id} name={name} isOwner={owner_id?.toString() === user?.id.toString()} />
-            ))}
-          </section>
+          <Channels />
         </div>
         <div className="w-full">
           <Outlet />

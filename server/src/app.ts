@@ -1,4 +1,5 @@
 import express from 'express';
+import { env } from './conf/env';
 import { createMessage } from './services/message.service';
 import { Server } from 'socket.io';
 import cors, { CorsOptions } from "cors";
@@ -8,7 +9,7 @@ import messageRouter from "./routes/message.route"
 import cookieParser from 'cookie-parser'
 import userRouter from "./routes/user.route"
 import channelRouter from "./routes/channel.route"
-import { env } from './conf/env';
+import serverRouter from "./routes/server.route"
 import { verifyUserJWT } from './middlewares/auth.middleware';
 
 const app = express();
@@ -59,6 +60,7 @@ io.on('connection', (socket) => {
 app.use("/api/v1/health", healthRouter)
 app.use("/api/v1/users", userRouter)
 app.use("/api/v1/channels", verifyUserJWT, channelRouter)
+app.use("/api/v1/servers", verifyUserJWT, serverRouter)
 app.use("/api/v1/messages", verifyUserJWT, messageRouter)
 
 export default server;

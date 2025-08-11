@@ -47,11 +47,11 @@ const router = createBrowserRouter([
         element: <SelectChatPage />,
       },
       {
-        path: "/c/:channelId",
+        path: "/s/:serverId",
         element: <ChatPage />,
       },
       {
-        path: "/join/c/:channelId",
+        path: "/join/s/:serverId",
         element: <JoinChannelPage />,
       },
       {
