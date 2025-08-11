@@ -179,7 +179,7 @@ export const getJoinedServer = async (req: Request, res: Response) => {
       error as ApiError,
       res,
       "Failed to get servers",
-      "FETCH_SERVERS"
+      "GET_JOINED_SERVERS"
     );
   }
 }
@@ -212,7 +212,7 @@ export const deleteServer = async (req: Request, res: Response) => {
       });
     }
 
-     await Member.destroy({
+    await Member.destroy({
       where: {
         id: serverId
       }
@@ -232,7 +232,36 @@ export const deleteServer = async (req: Request, res: Response) => {
     handleError(
       error as ApiError,
       res,
-      "Failed to delete channels",
+      "Failed to delete server",
+      "DELETE_SERVER"
+    );
+  }
+}
+
+export const updateServer = async (req: Request, res: Response) => {
+  try {
+
+    const { serverId } = req.params
+
+    if (!serverId) throw new ApiError(404, "Server Id is required")
+
+    const { name } = req.body
+
+    const server = await Server.update(
+      { name },
+      { where: { id: serverId } }
+    )
+
+    return res.status(200).json({
+      message: "Server updated successfully",
+      server
+    })
+
+  } catch (error) {
+    handleError(
+      error as ApiError,
+      res,
+      "Failed to update server",
       "FETCH_CHANNELS"
     );
   }
