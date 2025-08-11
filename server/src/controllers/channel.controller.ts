@@ -92,3 +92,21 @@ export const getChannelByServer = async (req: Request, res: Response) => {
         handleError(error as ApiError, res, "Failed to get channels by server", "GET_CHANNEL_BY_SERVER");
     }
 }
+
+export const updateChannel = async (req: Request, res: Response) => {
+    try {
+        const { name } = req.body
+        const { channelId } = req.params
+
+        if (!channelId) throw new ApiError(404, "Channel Id is required")
+
+        const channel = await Channel.update({ name }, { where: { id: channelId } })
+
+        return res.status(200).json({
+            message: "Channel updated successfully",
+            channel
+        })
+    } catch (error) {
+        handleError(error as ApiError, res, "Failed to update channel", "CHANNEL_UPDATION")
+    }
+}

@@ -5,6 +5,7 @@ import Channel from "../models/channel.model";
 import Member from "../models/members.model";
 import Message from "../models/message.model";
 import Server from "../models/server.model";
+import { Op } from "sequelize";
 
 export const createServer = async (req: Request, res: Response) => {
   try {
@@ -161,7 +162,7 @@ export const getJoinedServer = async (req: Request, res: Response) => {
       })
     ])
 
-    const flattenedMemberServers =  memberServers.map(member => ({
+    const flattenedMemberServers = memberServers.map(member => ({
       ...member.dataValues,
       name: member.dataValues.server.name,
       id: member.dataValues.server_id,
@@ -189,19 +190,33 @@ export const deleteServer = async (req: Request, res: Response) => {
 
     if (!serverId) throw new ApiError(400, "Server Id is required")
 
-    const messages = await Message.destroy({
+    const channels = await Channel.findAll({
       where: {
         server_id: serverId
       }
     })
 
-    const serverMembers = await Member.destroy({
+    const channelIds = channels.map(c => c.dataValues.id)
+
+    await Channel.destroy({
       where: {
         server_id: serverId
-      }
+      },
     })
 
-    if (!serverMembers) throw new ApiError(400, "Failed to delete server members")
+    if (channelIds.length > 0) {
+      await Message.destroy({
+        where: {
+          channel_id: { [Op.in]: channelIds }
+        }
+      });
+    }
+
+     await Member.destroy({
+      where: {
+        id: serverId
+      }
+    })
 
     const server = await Server.destroy({
       where: { id: serverId }
@@ -209,16 +224,8 @@ export const deleteServer = async (req: Request, res: Response) => {
 
     if (!server) throw new ApiError(400, "Server Id is invalid")
 
-    const channel = await Channel.destroy({
-      where: { id: serverId }
-    })
-
-    if (!channel) throw new ApiError(400, "Server Id is invalid")
-
     return res.status(200).json({
-      serverMembers,
-      channel,
-      messages
+      message: "Server deleted successfully"
     })
 
   } catch (error) {

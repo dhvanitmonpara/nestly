@@ -1,5 +1,5 @@
 import { MdDelete, MdDone, MdEdit } from "react-icons/md";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -13,19 +13,21 @@ import type { AxiosError } from "axios";
 import axios from "axios";
 import env from "../conf/env";
 import { toast } from "sonner";
-import useChannelStore from "../store/serverStore";
 import { useState } from "react";
-import { FaShare } from "react-icons/fa";
+import { FaShare, FaVoicemail } from "react-icons/fa";
+import type { IChannel } from "../types/IChannel";
+import { IoChatbubbleSharp } from "react-icons/io5";
 
-function ChannelCard({ id, name, isOwner = false }: { id: number, name: string, isOwner: boolean }) {
+function ChannelCard({ id, name, setChannel, type, isOwner = false }: { id: number, name: string, setChannel: React.Dispatch<React.SetStateAction<IChannel[]>>, type: "text" | "voice", isOwner: boolean }) {
 
     const [open, setOpen] = useState(false)
     const [editMode, setEditMode] = useState(false)
     const [editInput, setEditInput] = useState("")
 
     const { handleAuthError } = useHandleAuthError()
-    const removeServer = useChannelStore(s => s.removeServer)
     const navigate = useNavigate()
+
+    const { serverId } = useParams()
 
     const handleDeleteServer = async () => {
         const toastId = toast.loading(`Deleting the server ${name}`)
@@ -37,7 +39,7 @@ function ChannelCard({ id, name, isOwner = false }: { id: number, name: string, 
                 return
             }
 
-            removeServer(id)
+            setChannel(prev => prev.filter(c => c.id !== id))
             navigate("/")
 
         } catch (error) {
@@ -48,20 +50,24 @@ function ChannelCard({ id, name, isOwner = false }: { id: number, name: string, 
         }
     }
 
-
     const handleEditChannel = async () => {
+        const toastId = toast.loading("Updating channel name")
         try {
-            const res = await axios.delete(`${env.SERVER_ENDPOINT}/channels/${id}`, { withCredentials: true })
+            const res = await axios.patch(`${env.SERVER_ENDPOINT}/channels/update/${id}`, { name: editInput }, { withCredentials: true })
 
             if (res.status !== 200) {
-                toast.error("Failed to delete the channel")
+                toast.error("Failed to update the channel")
                 return
             }
 
-            removeServer(id)
+            setChannel(prev => (prev.map(c => c.id === id ? { ...c, name: editInput } : c)))
+            setEditMode(false)
+            setEditInput("")
 
         } catch (error) {
             handleAuthError(error as AxiosError)
+        } finally {
+            toast.dismiss(toastId)
         }
     }
 
@@ -71,7 +77,7 @@ function ChannelCard({ id, name, isOwner = false }: { id: number, name: string, 
     }
 
     return (
-        <Link to={`/c/${id}`} key={id} className={`flex items-center justify-between ${editMode ? "py-3 transition-colors" : "p-3 hover:bg-zinc-700/50"} cursor-pointer rounded-md`}>
+        <Link to={`/s/${serverId}/c/${id}`} key={id} className={`flex items-center justify-between group ${editMode ? "transition-colors" : "px-3 hover:bg-zinc-700/50"} cursor-pointer rounded-md`}>
             {editMode
                 ? <div className="bg-zinc-700/70 rounded-md relative w-full">
                     <input
@@ -93,10 +99,15 @@ function ChannelCard({ id, name, isOwner = false }: { id: number, name: string, 
                         </button>
                     </div>
                 </div>
-                : <span>{name}</span>
+                : <div className="flex justify-center items-center space-x-2">
+                    {type === "text" ? <IoChatbubbleSharp /> : <FaVoicemail />}
+                    <span>
+                        {name}
+                    </span>
+                </div>
             }
             {!editMode && <DropdownMenu open={open} onOpenChange={setOpen}>
-                <DropdownMenuTrigger onClick={e => e.stopPropagation()} className="hover:bg-zinc-300 hover:text-zinc-900 transition-colors p-2 rounded-full cursor-pointer">
+                <DropdownMenuTrigger onClick={e => e.stopPropagation()} className="hover:bg-zinc-300 hover:text-zinc-900 opacity-0 group-hover:opacity-100 transition-colors p-2 rounded-full cursor-pointer">
                     <HiDotsHorizontal />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="bg-zinc-800 text-zinc-300 border-zinc-800">

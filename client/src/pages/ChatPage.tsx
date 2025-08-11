@@ -6,37 +6,38 @@ import { toast } from "sonner"
 import useSocket from "../socket/useSocket"
 import useUserStore from "../store/userStore"
 import type { IMessage } from "../types/IMessage"
-import type { IServer } from "../types/IServer"
+import type { IChannel } from "../types/IChannel"
 
 function ChatPage() {
-
-  const [server, setServer] = useState<IServer | null>(null)
+  const [channel, setChannel] = useState<IChannel | null>(null)
   const [loading, setLoading] = useState(false)
+  const [typingUsers, setTypingUsers] = useState<string[]>([])
 
-  const serverId = useParams().serverId
   const user = useUserStore(s => s.user)
   const socket = useSocket()
   const navigate = useNavigate()
+
+  const { channelId } = useParams<{ channelId: string }>()
 
   useEffect(() => {
     (async () => {
 
       setLoading(true)
 
-      if (!serverId || !user) {
+      if (!channelId || !user) {
         navigate("/")
         return
       }
 
       try {
-        const res = await axios.get(`${env.SERVER_ENDPOINT}/messages/chat/${user.id}/${serverId}`, { withCredentials: true })
+        const res = await axios.get(`${env.SERVER_ENDPOINT}/messages/chat/${user.id}/${channelId}`, { withCredentials: true })
 
         if (!res.data) {
           navigate("/")
           return
         }
 
-        setServer(res.data.server)
+        setChannel(res.data.channel)
 
       } catch (error) {
         console.log(error)
@@ -44,7 +45,7 @@ function ChatPage() {
         setLoading(false)
       }
     })()
-  }, [serverId, navigate, user])
+  }, [channelId, navigate, user])
 
   useEffect(() => {
     if (!socket.socket) return;
@@ -52,23 +53,44 @@ function ChatPage() {
     const s = socket.socket;
 
     const handleMessage = (data: IMessage) => {
+      if (!channelId) return;
+
       console.log('Received message:', data);
-      const newMessage = {
+      const newMessage: IMessage = {
         id: Date.now().toString(),
         content: data.content,
         user: data.user,
+        channel_id: channelId
       };
 
-      setServer((prev) => {
+      setChannel((prev) => {
         return {
           ...prev,
-          channels: prev ? [
-            ...prev.channels,
+          messages: prev ? [
+            ...prev.messages,
             newMessage
           ] : newMessage
-        } as IServer
+        } as IChannel
       })
     };
+
+    const handleUserTyping = (username: string, channel_id: string) => {
+      if (channel_id === channelId) {
+        setTypingUsers((prev) =>
+          prev.includes(username) ? prev : [...prev, username]
+        )
+      }
+    }
+
+    const handleUserStopTyping = (username: string, channel_id: string) => {
+      if (channel_id === channelId) {
+        setTypingUsers((prev) => prev.filter((id) => id !== username))
+      }
+    }
+
+    s.on("user_typing", ({ username, channelId }) => handleUserTyping(username, channelId))
+
+    s.on("user_stop_typing", ({ username, channelId }) => handleUserStopTyping(username, channelId))
 
     s.on("connect", () => {
       console.log("Socket connected:", s.id);
@@ -78,23 +100,26 @@ function ChatPage() {
 
     return () => {
       s.off("message", handleMessage);
+      s.off("user_typing")
+      s.off("user_stop_typing")
+      s.off("disconnect");
     };
-  }, [socket]);
+  }, [channelId, socket]);
 
   return (
     <div className="h-full max-h-screen overflow-y-auto">
       <div className="h-full">
         <div className="sticky top-0 bg-zinc-900 px-4 pt-4">
           <h1 className="w-full h-12 bg-zinc-800 px-4 rounded-md flex justify-start items-center">
-            {server?.name ?? "Loading..."}
+            {channel?.name ?? "Loading..."}
           </h1>
         </div>
         <div className="px-4 pt-10 pb-60">
           {loading ? (
             <h2>Loading...</h2>
           ) : (
-            server?.channels.map((chat) => {
-              const color = `#${chat.user.accent_color}`
+            channel?.messages.map((chat) => {
+              const color = `#${chat.user?.accent_color}`
               return <div className="my-2 mx-6" key={chat.id}>
                 <p
                   style={{
@@ -106,21 +131,32 @@ function ChatPage() {
               </div>
             })
           )}
+          <div className="text-sm text-zinc-400 px-4 pb-2">
+            {typingUsers.length > 0 &&
+              `${typingUsers.length === 1
+                ? typingUsers[0] + " is typing..."
+                : typingUsers.join(", ") + " are typing..."}`
+            }
+          </div>
         </div>
       </div>
-      <SendMessage setServer={setServer} />
+      <SendMessage setChannel={setChannel} />
     </div>
   )
 }
 
 
-const SendMessage = ({ setChannel }: { setChannel: React.Dispatch<React.SetStateAction<IChannelWithMessage | null>> }) => {
+const SendMessage = ({ setChannel }: { setChannel: React.Dispatch<React.SetStateAction<IChannel | null>> }) => {
   const [message, setMessage] = useState("")
+  const [isTyping, setIsTyping] = useState(false)
+
+  let typingTimeout: NodeJS.Timeout
 
   const navigate = useNavigate()
   const channelId = useParams().channelId
   const socket = useSocket()
   const user = useUserStore(s => s.user)
+  const { serverId } = useParams()
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -141,7 +177,7 @@ const SendMessage = ({ setChannel }: { setChannel: React.Dispatch<React.SetState
       return
     }
 
-    const newMessage: IMessageWithUser = {
+    const newMessage: IMessage = {
       id: Date.now().toString(),
       content: message,
       channel_id: channelId,
@@ -160,17 +196,36 @@ const SendMessage = ({ setChannel }: { setChannel: React.Dispatch<React.SetState
           ...prev.messages,
           newMessage
         ] : newMessage
-      } as IChannelWithMessage
+      } as IChannel
     })
 
-    socket.socket.emit("message", newMessage)
+    socket.socket.emit("message", { ...newMessage, serverId })
     setMessage("")
   }
 
+  const handleTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMessage(e.target.value)
+
+    if (!socket.socket || !user || !channelId) return
+
+    const s = socket.socket
+
+    if (!isTyping) {
+      setIsTyping(true)
+      s.emit("typing", { channelId, username: user.display_name, serverId })
+    }
+
+    clearTimeout(typingTimeout)
+    typingTimeout = setTimeout(() => {
+      setIsTyping(false)
+      s.emit("stop_typing", { channelId, username: user.display_name, serverId })
+    }, 2000) // 2 seconds after last keypress
+  }
+
   return (
-    <div className="fixed bottom-0 right-4 w-[calc(100vw-250px)]">
+    <div className="fixed bottom-0 right-4 w-[calc(100vw-290px)]">
       <form onSubmit={handleSubmit} className="relative pb-4 bg-zinc-900">
-        <input onChange={(e) => setMessage(e.target.value)} value={message} type="text" placeholder="Type a message" className="w-full py-2 px-4 bg-zinc-800 rounded-md" />
+        <input onChange={handleTyping} value={message} type="text" placeholder="Type a message" className="w-full py-2 px-4 bg-zinc-800 rounded-md" />
         <button type="submit" className="bg-zinc-700 hover:bg-zinc-600 text-zinc-100 font-semibold px-3 py-2 rounded-md absolute right-0 cursor-pointer">
           Send
         </button>

@@ -11,6 +11,7 @@ import { Toaster } from "sonner"
 import useSocket from "../socket/useSocket"
 import ServerIcon from "../components/ServerIcon"
 import Channels from "../components/Channels"
+import { Separator } from "../components/ui/separator"
 
 function Layout() {
 
@@ -48,23 +49,23 @@ function Layout() {
     //       messages: prev ? [
     //         ...prev.messages,
     //         message
-    //       ] : message
+  //       ] : message
     //     } as IChannelWithMessage
     //   })
     // }
 
-    socket.socket.on("channelJoined", (channelId) => {
-      console.log(`✅ Joined channel: ${channelId}`);
+    socket.socket.on("serverJoined", (serverId) => {
+      console.log(`✅ Joined server: ${serverId}`);
     });
 
-    const channelIds = servers.flatMap(s => s?.channels?.map(c => c.id.toString()))
-    socket.socket.emit("joinChannel", channelIds)
+    const serverIds = servers.map(s => s.id.toString())
+    socket.socket.emit("joinServer", serverIds)
     // socket.socket.on("message", handleIncomingMessage)
 
     return () => {
       if (socket.socket) {
         // socket.socket.off("message", handleIncomingMessage)
-        socket.socket.off("channelJoined");
+        socket.socket.off("serverJoined");
       }
     }
   }, [servers, socket])
@@ -76,6 +77,7 @@ function Layout() {
           {servers.length > 0 && servers.map(({ id, name, owner_id }) => (
             <ServerIcon id={id} key={id} name={name} isOwner={owner_id?.toString() === user?.id.toString()} />
           ))}
+           <Separator className="bg-zinc-800 mt-1.5" />
           <CreateChannelForm />
         </section>
         <div className="w-[250px] py-6 px-4 bg-zinc-800/50">

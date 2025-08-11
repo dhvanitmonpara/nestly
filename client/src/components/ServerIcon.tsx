@@ -41,7 +41,6 @@ function ServerIcon({ id, name, isOwner = false }: { id: number, name: string, i
 
         } catch (error) {
             handleAuthError(error as AxiosError)
-            console.log("failed")
         } finally {
             toast.dismiss(toastId)
         }
@@ -72,19 +71,25 @@ function ServerIcon({ id, name, isOwner = false }: { id: number, name: string, i
     return (
         <ContextMenu>
             <ContextMenuTrigger onClick={e => e.stopPropagation()}>
-                <Link to={`/s/${id}`} key={id} className={`flex items-center justify-center h-10 w-10 mt-1 transition-all duration-50 font-semibold ${id.toString() === serverId ? "bg-violet-500 rounded-xl" : "bg-zinc-700/50 rounded-full hover:rounded-xl"}  cursor-pointer`}>
+                <Link to={`/s/${id}`} key={id} className={`flex items-center justify-center select-none h-10 w-10 mt-1 transition-all duration-50 font-semibold ${id.toString() === serverId ? "bg-violet-500 rounded-xl" : "bg-zinc-700/50 rounded-full hover:rounded-xl"}  cursor-pointer`}>
                     {name.slice(0, 1).toUpperCase()}
                 </Link>
             </ContextMenuTrigger>
             <ContextMenuContent className="bg-zinc-800 text-zinc-300 border-zinc-800">
-                <ContextMenuItem onClick={() => {
-                    setEditMode(true)
-                    setEditInput(name)
-                }} className="text-zinc-100 flex justify-start items-center space-x-1">
+                <ContextMenuItem
+                    onClick={() => {
+                        setEditMode(true)
+                        setEditInput(name)
+                    }}
+                    className="text-zinc-100 focus:text-zinc-100 focus:bg-zinc-700 flex justify-start items-center space-x-1"
+                >
                     <MdEdit className="text-zinc-300" />
                     <span className="text-sm font-semibold text-zinc-300">Edit</span>
                 </ContextMenuItem>
-                <ContextMenuItem onClick={handleShare} className="text-zinc-100 flex justify-start items-center space-x-1">
+                <ContextMenuItem
+                    onClick={handleShare}
+                    className="text-zinc-100 focus:text-zinc-100 focus:bg-zinc-700 flex justify-start items-center space-x-1"
+                >
                     <FaShare className="text-zinc-300" />
                     <span className="text-sm font-semibold text-zinc-300">Share</span>
                 </ContextMenuItem>

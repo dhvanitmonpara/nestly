@@ -7,7 +7,7 @@ import type { IChannel } from "../types/IChannel"
 import ChannelCard from "./ChannelCard"
 import useUserStore from "../store/userStore"
 import useServerStore from "../store/serverStore"
-import { FiPlus } from "react-icons/fi"
+import { Separator } from "../components/ui/separator"
 import CreateChannelForm from "./CreateChannelForm"
 
 function Channels() {
@@ -29,7 +29,7 @@ function Channels() {
                     toast.error("Failed to fetch channels");
                     return;
                 }
-                setChannels(res.data);
+                setChannels(res.data.channels);
             } catch (error) {
                 console.log(error)
             } finally {
@@ -43,10 +43,11 @@ function Channels() {
     if (loading) return <div>Loading...</div>
 
     return (
-        <div>
-            <CreateChannelForm />
-            {channels.length > 0 && channels.map(channel => (
-                <ChannelCard key={channel.id} id={channel.id} name={channel.name} isOwner={user?.id === server?.owner_id} />
+        <div className="space-y-1">
+            {serverId && <CreateChannelForm setChannel={setChannels} />}
+            <Separator className="bg-zinc-800" />
+            {serverId && channels.length > 0 && channels.map(channel => (
+                <ChannelCard key={channel.id} id={channel.id} name={channel.name} type={channel.type} setChannel={setChannels} isOwner={user?.id === server?.owner_id} />
             ))}
         </div>
     )

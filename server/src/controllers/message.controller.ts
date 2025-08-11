@@ -40,9 +40,7 @@ export const loadMessages = async (req: Request, res: Response) => {
 
         if (!channelId) throw new ApiError(400, "Channel Id and User Id are required")
 
-        const channel = await Channel.findOne({
-            where: { id: channelId }
-        })
+        const channel = await Channel.findByPk(channelId)
 
         if (!channel) throw new ApiError(404, "Channel not found")
 

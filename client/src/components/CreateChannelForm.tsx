@@ -14,7 +14,6 @@ import axios from "axios"
 import env from "../conf/env"
 import useUserStore from "../store/userStore"
 import { useNavigate, useParams } from "react-router-dom"
-import useChannelStore from "../store/serverStore"
 import { useState } from "react"
 import {
     Select,
@@ -22,19 +21,19 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select"
+} from "../components/ui/select"
+import type { IChannel } from "../types/IChannel"
 
 type ChannelDataType = {
     name: string
     type: "text" | "voice"
 }
 
-function CreateChannelForm() {
+function CreateChannelForm({setChannel}: {setChannel:  React.Dispatch<React.SetStateAction<IChannel[]>>}) {
 
     const [open, setOpen] = useState(false)
 
     const user = useUserStore(s => s.user)
-    const addServer = useChannelStore(s => s.addServer)
     const navigate = useNavigate()
 
     const { serverId } = useParams()
@@ -68,15 +67,16 @@ function CreateChannelForm() {
 
             const res = await axios.post(`${env.SERVER_ENDPOINT}/channels/create`, {
                 name: data.name,
-                server_id: serverId
+                server_id: serverId,
+                type: data.type
             }, { withCredentials: true })
 
-            if (res.status !== 200) {
+            if (res.status !== 201) {
                 toast.error("Failed to create a channel")
                 return
             }
 
-            addServer(res.data.server)
+            setChannel(prev => [...prev, res.data.channel])
 
         } catch (error) {
             console.error(error)
@@ -89,7 +89,7 @@ function CreateChannelForm() {
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger className="text-sm flex justify-start items-center space-x-2 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-700/50 rounded-md px-3 py-2 mb-4 w-full cursor-pointer" onClick={() => setOpen(true)}>
+            <DialogTrigger className="text-sm flex justify-start items-center space-x-2 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-700/50 rounded-md px-3 py-2 w-full cursor-pointer" onClick={() => setOpen(true)}>
                 <FiPlus />
                 <span className="font-semibold">
                     Create Channel
@@ -111,14 +111,13 @@ function CreateChannelForm() {
                         placeholder="Enter Server name"
                         {...register("name")}
                     />
-                    <Select>
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Theme" />
+                    <Select defaultValue="text" onValueChange={(value) => setValue("type", value as ("text" | "voice"))}>
+                        <SelectTrigger className="w-full bg-zinc-800 border-zinc-800">
+                            <SelectValue placeholder="Type" />
                         </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="light">Light</SelectItem>
-                            <SelectItem value="dark">Dark</SelectItem>
-                            <SelectItem value="system">System</SelectItem>
+                        <SelectContent className="bg-zinc-800 border-zinc-800">
+                            <SelectItem className="bg-zinc-800 focus:bg-zinc-700 text-zinc-100 focus:text-zinc-100" value="text">Text</SelectItem>
+                            <SelectItem className="bg-zinc-800 focus:bg-zinc-700 text-zinc-100 focus:text-zinc-100" value="voice">Voice</SelectItem>
                         </SelectContent>
                     </Select>
                     <button type="submit" className="px-4 py-2 bg-zinc-200 text-zinc-900 font-semibold w-full rounded-md hover:bg-zinc-300 cursor-pointer disabled:opacity-60">

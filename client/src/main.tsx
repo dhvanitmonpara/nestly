@@ -11,9 +11,9 @@ import SignupPage from './pages/SignupPage.tsx'
 import AuthLayout from './layouts/AuthLayout.tsx'
 import OtpVerfificationPage from './pages/OtpVerfificationPage.tsx'
 import UserSetupPage from './pages/UserSetupPage.tsx'
-import JoinChannelPage from './pages/JoinChannelPage.tsx'
 import { SocketProvider } from './socket/socketContext.tsx'
 import ProfilePage from './pages/ProfilePage.tsx'
+import JoinServerPage from './pages/JoinServerPage.tsx'
 
 const router = createBrowserRouter([
   {
@@ -48,11 +48,15 @@ const router = createBrowserRouter([
       },
       {
         path: "/s/:serverId",
+        element: <></>,
+      },
+      {
+        path: "/s/:serverId/c/:channelId",
         element: <ChatPage />,
       },
       {
         path: "/join/s/:serverId",
-        element: <JoinChannelPage />,
+        element: <JoinServerPage />,
       },
       {
         path: "/u/:userId",

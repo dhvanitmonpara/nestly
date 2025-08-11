@@ -38,19 +38,27 @@ app.use(express.static("public"));
 
 io.on('connection', (socket) => {
   // Join channel-specific room
-  socket.on('joinChannel', (channel_ids) => {
-    socket.join(channel_ids);
-    console.log(`User ${socket.id} joined channel ${channel_ids}`);
-    socket.emit('channelJoined', channel_ids); // Notify client
+  socket.on('joinServer', (server_ids) => {
+    socket.join(server_ids);
+    console.log(`User ${socket.id} joined server ${server_ids}`);
+    socket.emit('serverJoined', server_ids); // Notify client
   });
 
   socket.on('message', (msg) => {
     createMessage(msg.content, msg.user.id, msg.channel_id);
     console.log(msg)
-    
+
     // Emit to everyone in the room except sender
-    socket.to(msg.channel_id).emit('message', msg);
+    socket.to(msg.serverId).emit('message', msg);
   });
+
+  socket.on("typing", ({ channelId, username, serverId }) => {
+    socket.to(serverId).emit("user_typing", { username, channelId })
+  })
+
+  socket.on("stop_typing", ({ channelId, username, serverId }) => {
+    socket.to(serverId).emit("user_stop_typing", { username, channelId })
+  })
 
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
