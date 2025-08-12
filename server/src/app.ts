@@ -1,9 +1,18 @@
 import express from 'express';
 import { env } from './conf/env';
 import { createMessage } from './services/message.service';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import cors, { CorsOptions } from "cors";
 import http from 'http';
+
+// Extend Socket type to include userId
+declare module "socket.io" {
+  interface Socket {
+    userId?: string;
+    username?: string;
+    channel?: string
+  }
+}
 import healthRouter from "./routes/health.route"
 import messageRouter from "./routes/message.route"
 import cookieParser from 'cookie-parser'
@@ -37,6 +46,16 @@ app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public"));
 
 io.on('connection', (socket) => {
+  socket.userId = socket.handshake.auth.userId as string;
+  socket.username = socket.handshake.auth.username as string;
+  socket.channel = socket.handshake.auth.channel as string;
+
+  const handleChannelChange = (channelId: string | null) => {
+    const serverIds = Array.from(socket.rooms)
+    socket.channel = channelId ?? "";
+    socket.to(serverIds).emit("userGotOffline", { userId: socket.userId });
+  }
+
   // Join channel-specific room
   socket.on('joinServer', (server_ids) => {
     socket.join(server_ids);
@@ -51,6 +70,26 @@ io.on('connection', (socket) => {
     // Emit to everyone in the room except sender
     socket.to(msg.serverId).emit('message', msg);
   });
+
+  socket.on("userOnline", ({ channelId, serverId }) => {
+    socket.channel = channelId;
+    socket.to(serverId).emit("userGotOnline", { channelId, userId: socket.userId, serverId, username: socket.username });
+    const onlineUsersSockets = io.sockets.adapter.rooms.get(serverId);
+    const onlineUsers = Array.from(onlineUsersSockets || []).map(socketId => {
+      const sock = io.sockets.sockets.get(socketId); // socket instance
+      if (sock && sock.userId) {
+        return { userId: sock.userId, username: sock.username, serverIds: Array.from(sock.rooms), channelId: sock.channel };
+      }
+    });
+    console.log("Previous online users:", socket.userId);
+    socket.emit("previousOnlineUsers", onlineUsers.filter(u => u?.userId !== socket.userId));
+  });
+
+  socket.on("disconnect", () => {
+    handleChannelChange(null);
+  });
+
+  socket.on("ChannelChanged", handleChannelChange)
 
   socket.on("typing", ({ channelId, username, serverId }) => {
     socket.to(serverId).emit("user_typing", { username, channelId })

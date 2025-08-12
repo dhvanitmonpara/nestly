@@ -39,7 +39,9 @@ function Layout() {
   }, [fetchServers])
 
   useEffect(() => {
-    if (!socket.connected || !socket.socket || !servers) return
+    if (!socket.connected || !socket.socket || !servers || !serverId) return
+
+    const s = socket.socket;
 
     // const handleIncomingMessage = (message: IMessageWithUser) => {
     //   if (serverId) return
@@ -49,26 +51,26 @@ function Layout() {
     //       messages: prev ? [
     //         ...prev.messages,
     //         message
-  //       ] : message
+    //       ] : message
     //     } as IChannelWithMessage
     //   })
     // }
 
-    socket.socket.on("serverJoined", (serverId) => {
+    s.on("serverJoined", (serverId) => {
       console.log(`✅ Joined server: ${serverId}`);
     });
 
     const serverIds = servers.map(s => s.id.toString())
-    socket.socket.emit("joinServer", serverIds)
-    // socket.socket.on("message", handleIncomingMessage)
+    s.emit("joinServer", serverIds)
+    // s.on("message", handleIncomingMessage)
 
     return () => {
       if (socket.socket) {
         // socket.socket.off("message", handleIncomingMessage)
-        socket.socket.off("serverJoined");
+        s.off("serverJoined");
       }
     }
-  }, [servers, socket])
+  }, [serverId, servers, socket])
 
   return (
     <div>
@@ -77,20 +79,20 @@ function Layout() {
           {servers.length > 0 && servers.map(({ id, name, owner_id }) => (
             <ServerIcon id={id} key={id} name={name} isOwner={owner_id?.toString() === user?.id.toString()} />
           ))}
-           <Separator className="bg-zinc-800 mt-1.5" />
+          <Separator className="bg-zinc-800 mt-1.5" />
           <CreateChannelForm />
         </section>
-        <div className="w-[250px] py-6 px-4 bg-zinc-800/50">
+        <div className="w-[250px] py-6 px-4 bg-zinc-800/50 relative">
           <h3 className="flex justify-between items-center">
             <Link className="text-xl font-semibold" to="/">{servers.find(s => s.id.toString() === serverId)?.name || "TechyScord"}</Link>
           </h3>
           <input type="text" placeholder="Search a channel" className="my-4 w-full py-2 px-4 bg-zinc-700/50 rounded-md" />
           <Channels />
+          <ProfileButton />
         </div>
         <div className="w-full">
           <Outlet />
         </div>
-        <ProfileButton />
       </div>
       <Toaster />
     </div>

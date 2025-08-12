@@ -2,22 +2,25 @@ import axios from "axios"
 import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import env from "../conf/env"
-import { toast } from "sonner"
 import useSocket from "../socket/useSocket"
 import useUserStore from "../store/userStore"
 import type { IMessage } from "../types/IMessage"
 import type { IChannel } from "../types/IChannel"
-import formatTimestamp from "../utils/formatTimeStampt"
+import MessageCard from "../components/MessageCard"
+import SendMessage from "../components/SendMessage"
+
+type IncomingUserType = { userId: string, username: string, channelId: string, serverIds: string[] }
 
 function ChatPage() {
   const [channel, setChannel] = useState<IChannel | null>(null)
+  const [onlineUsers, setOnlineUsers] = useState<IncomingUserType[]>([])
   const [loading, setLoading] = useState(false)
 
   const user = useUserStore(s => s.user)
   const socket = useSocket()
   const navigate = useNavigate()
 
-  const { channelId } = useParams<{ channelId: string }>()
+  const { channelId, serverId } = useParams<{ channelId: string, serverId: string }>()
 
   useEffect(() => {
     (async () => {
@@ -48,7 +51,8 @@ function ChatPage() {
   }, [channelId, navigate, user])
 
   useEffect(() => {
-    if (!socket.socket) return;
+    setOnlineUsers([]);
+    if (!socket.socket || !user?.id || !serverId || !channelId) return;
 
     const s = socket.socket;
 
@@ -74,173 +78,78 @@ function ChatPage() {
       })
     };
 
-    s.on("connect", () => {
-      console.log("Socket connected:", s.id);
+    s.emit("userOnline", { channelId, serverId });
+
+    s.on("userGotOnline", (data) => {
+      console.log("User got online:", data);
+      if (data.userId === user?.id) return; // Ignore own online status
+      if (data.serverId === serverId && data.channelId === channelId) {
+        setOnlineUsers((prev) => [...prev, { userId: data.userId, username: data.username, channelId, serverIds: [serverId] }]);
+      }
+    });
+
+    s.on("previousOnlineUsers", (data) => {
+      const users = data.filter((u: IncomingUserType) => u.serverIds.includes(serverId) && u.channelId === channelId);
+      console.log("Previous online users:", data, users);
+      setOnlineUsers(users);
+    });
+
+    s.on("userGotOffline", (data) => {
+      console.log("User got offline:", data);
+      setOnlineUsers((prev) => prev.filter((user) => user.userId !== data.userId));
     });
 
     s.on("message", handleMessage);
 
     return () => {
+      s.emit("ChannelChanged", channelId);
       s.off("message", handleMessage);
-      s.off("disconnect");
+      s.off("userGotOnline");
+      s.off("userGotOffline");
     };
-  }, [channelId, socket]);
+  }, [channelId, serverId, socket.socket, user?.id]);
 
   return (
-    <div className="h-full max-h-screen overflow-y-auto">
-      <div className="h-full">
-        <div className="sticky top-0 bg-zinc-900 px-4 pt-4">
-          <h1 className="w-full h-12 bg-zinc-800 px-4 rounded-md flex justify-start items-center">
-            {channel?.name ?? "Loading..."}
-          </h1>
-        </div>
-        <div className="px-4 pt-10 pb-60">
-          {loading ? (
-            <h2>Loading...</h2>
-          ) : (
-            channel?.messages.map((chat) => {
-              const color = `#${chat.user?.accent_color}`
-              return <div className="my-2 mx-6" key={chat.id}>
-                <p
-                  className={`text-sm flex justify-between items-center`}
-                >
-                  <span style={{
-                    color: color
-                  }}>{chat.user?.username || "Unknown"}</span>
-                  <span className="text-[0.70rem] text-zinc-500">{chat.createdAt ? formatTimestamp(chat.createdAt) : ""}</span>
-                </p>
-                <p className="text-zinc-200">{chat.content}</p>
-              </div>
-            })
-          )}
+    <div className="flex h-full max-h-screen">
+      <div className="relative w-full">
+        <div className="h-full overflow-y-auto w-full no-scrollbar">
+          <div className="h-full">
+            <div className="sticky top-0 bg-zinc-900 px-4 pt-4">
+              <h1 className="w-full h-12 bg-zinc-800 px-4 rounded-md flex justify-start items-center">
+                {channel?.name ?? "Loading..."}
+              </h1>
+            </div>
+            <div className="px-4 pt-10 pb-60 divide-y divide-zinc-800/50">
+              {loading ? (
+                <h2>Loading...</h2>
+              ) : (
+                channel?.messages.map((chat) => (
+                  <MessageCard key={chat.id} chat={chat} />
+                ))
+              )}
+            </div>
+          </div>
+          <SendMessage setChannel={setChannel} />
         </div>
       </div>
-      <SendMessage setChannel={setChannel} />
-    </div>
-  )
-}
-
-
-const SendMessage = ({ setChannel }: { setChannel: React.Dispatch<React.SetStateAction<IChannel | null>> }) => {
-  const [message, setMessage] = useState("")
-  const [isTyping, setIsTyping] = useState(false)
-  const [typingUsers, setTypingUsers] = useState<string[]>([])
-
-  let typingTimeout: NodeJS.Timeout
-
-  const navigate = useNavigate()
-  const channelId = useParams().channelId
-  const socket = useSocket()
-  const user = useUserStore(s => s.user)
-  const { serverId } = useParams()
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (!socket.socket) return
-
-    if (!channelId) {
-      navigate("/")
-      return
-    }
-
-    if (!user) {
-      navigate("/auth/signin")
-      return
-    }
-
-    if (!message) {
-      toast.info("You can't send empty message")
-      return
-    }
-
-    const newMessage: IMessage = {
-      id: Date.now().toString(),
-      content: message,
-      channel_id: channelId,
-      user: {
-        id: user.id,
-        accent_color: user.accent_color,
-        username: user.username,
-        display_name: user.display_name
-      },
-    }
-
-    setChannel((prev) => {
-      return {
-        ...prev,
-        messages: prev ? [
-          ...prev.messages,
-          newMessage
-        ] : newMessage
-      } as IChannel
-    })
-
-    socket.socket.emit("message", { ...newMessage, serverId })
-    setMessage("")
-  }
-
-  const handleTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setMessage(e.target.value)
-
-    if (!socket.socket || !user || !channelId) return
-
-    const s = socket.socket
-
-    if (!isTyping) {
-      setIsTyping(true)
-      s.emit("typing", { channelId, username: user.display_name, serverId })
-    }
-
-    clearTimeout(typingTimeout)
-    typingTimeout = setTimeout(() => {
-      setIsTyping(false)
-      s.emit("stop_typing", { channelId, username: user.display_name, serverId })
-    }, 2000) // 2 seconds after last keypress
-  }
-
-  useEffect(() => {
-    if (!socket.socket) return
-    const s = socket.socket
-
-    const handleUserTyping = (username: string, channel_id: string) => {
-      if (channel_id === channelId) {
-        setTypingUsers((prev) =>
-          prev.includes(username) ? prev : [...prev, username]
-        )
-      }
-    }
-
-    const handleUserStopTyping = (username: string, channel_id: string) => {
-      if (channel_id === channelId) {
-        setTypingUsers((prev) => prev.filter((id) => id !== username))
-      }
-    }
-
-    s.on("user_typing", ({ username, channelId }) => handleUserTyping(username, channelId))
-
-    s.on("user_stop_typing", ({ username, channelId }) => handleUserStopTyping(username, channelId))
-
-    return () => {
-      s.off("user_typing")
-      s.off("user_stop_typing")
-    }
-  }, [channelId, socket.socket])
-
-  return (
-    <div className="fixed bottom-0 right-4 w-[calc(100vw-290px)]">
-      <div className={`text-xs text-zinc-900 bg-violet-500 rounded-t-sm mx-3 px-3 py-1 transition-all duration-100 ${typingUsers.length > 0 ? "translate-y-0" : "translate-y-20"}`}>
-        {typingUsers.length > 0 &&
-          `${typingUsers.length === 1
-            ? typingUsers[0] + " is typing..."
-            : typingUsers.join(", ") + " are typing..."}`
-        }
+      <div className="h-full overflow-y-auto w-96 bg-zinc-800">
+        <div className="p-4 font-semibold text-lg flex">
+          <span>
+            Online Users
+          </span>
+          <span className="bg-zinc-900 rounded-xl w-10 ml-2 text-xs flex justify-center items-center">{onlineUsers.length}</span>
+        </div>
+        {onlineUsers.length > 0 ? onlineUsers.map((user) => (
+          <div key={user.userId} className="px-4 py-2 border-b flex justify-start space-x-2 border-zinc-700">
+            <div className="font-semibold bg-zinc-900 rounded-full w-8 h-8 flex items-center justify-center">
+              {user.username.slice(0, 2)}
+            </div>
+            <div>
+              {user.username}
+            </div>
+          </div>
+        )) : <div className="h-40 flex justify-center items-center text-zinc-400 text-sm">No users online</div>}
       </div>
-      <form onSubmit={handleSubmit} className="relative pb-4 bg-zinc-900">
-        <input onChange={handleTyping} value={message} type="text" placeholder="Type a message" className="w-full py-2 px-4 bg-zinc-800 rounded-md" />
-        <button type="submit" className="bg-zinc-700 hover:bg-zinc-600 text-zinc-100 font-semibold px-3 py-2 rounded-md absolute right-0 cursor-pointer">
-          Send
-        </button>
-      </form>
     </div>
   )
 }

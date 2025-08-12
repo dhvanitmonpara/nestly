@@ -29,6 +29,8 @@ const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       transports: ["websocket"],
       auth: {
         userId: user.id,
+        username: user.username,
+        channel: ""
       },
     });
 

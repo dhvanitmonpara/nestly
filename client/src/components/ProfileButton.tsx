@@ -20,6 +20,8 @@ function ProfileButton() {
   const user = useUserStore(s => s.user)
   const { handleAuthError } = useHandleAuthError()
 
+  const color = `#${user?.accent_color}`
+
   const fetchUser = useCallback(async () => {
     try {
       const user = await axios.get(`${env.SERVER_ENDPOINT}/users/me`, { withCredentials: true })
@@ -42,12 +44,18 @@ function ProfileButton() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="rounded-full h-10 w-10 cursor-pointer bg-zinc-900 border-zinc-700 border fixed top-5 right-10">
-        {user?.display_name.split("")[0].toUpperCase() ?? "U"}
+      <DropdownMenuTrigger className="rounded-md w-full p-1 flex space-x-2 cursor-pointer bg-zinc-800 hover:bg-zinc-700/40 transition-colors border-zinc-700 border absolute bottom-1 left-0">
+        <div style={{ color }} className="bg-zinc-900 rounded-full w-8 h-8 flex items-center justify-center">
+          {user?.display_name.split("")[0].toUpperCase() ?? "U"}
+        </div>
+        <div>
+          <p className="text-xs text-start text-zinc-300 font-semibold">{user?.display_name}</p>
+          <p className="text-[0.70rem] text-start text-zinc-400">{user?.email}</p>
+        </div>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="bg-zinc-900 text-zinc-100 border-zinc-800">
+      <DropdownMenuContent className={`bg-zinc-800 text-zinc-100 border-zinc-800`}>
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-zinc-800" />
+        <DropdownMenuSeparator className="bg-zinc-700" />
         <DropdownMenuItem onClick={() => navigate(`/u/${user?.id}`)}>Profile</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
