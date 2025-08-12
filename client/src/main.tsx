@@ -13,6 +13,7 @@ import UserSetupPage from './pages/UserSetupPage.tsx'
 import { SocketProvider } from './socket/socketContext.tsx'
 import ProfilePage from './pages/ProfilePage.tsx'
 import JoinServerPage from './pages/JoinServerPage.tsx'
+import Room from './components/Room.tsx'
 
 const router = createBrowserRouter([
   {
@@ -52,6 +53,10 @@ const router = createBrowserRouter([
       {
         path: "/s/:serverId/c/:channelId",
         element: <ChatPage />,
+      },
+      {
+        path: "/s/:serverId/c/:channelId/rooms",
+        element: <Room />,
       },
       {
         path: "/join/s/:serverId",

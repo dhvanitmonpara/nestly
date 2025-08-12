@@ -19,7 +19,9 @@ import cookieParser from 'cookie-parser'
 import userRouter from "./routes/user.route"
 import channelRouter from "./routes/channel.route"
 import serverRouter from "./routes/server.route"
+import videocallRoute from "./routes/videocall.route"
 import { verifyUserJWT } from './middlewares/auth.middleware';
+import VideocallService from './services/videocall.service';
 
 const app = express();
 const server = http.createServer(app);
@@ -44,6 +46,8 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public"));
+
+const videocall = new VideocallService();
 
 io.on('connection', (socket) => {
   socket.userId = socket.handshake.auth.userId as string;
@@ -97,7 +101,18 @@ io.on('connection', (socket) => {
 
   socket.on("stop_typing", ({ channelId, username, serverId }) => {
     socket.to(serverId).emit("user_stop_typing", { username, channelId })
-  })
+  });
+
+  socket.on("listRooms", async (roomNames: string[]) => {
+    const rooms = await videocall.listRooms();
+    console.log(rooms)
+    const participants = await Promise.all(roomNames.map(roomName => videocall.listParticipantsByRoom(roomName)));
+    socket.emit("roomsList", { rooms, participants });
+  });
+
+  socket.on("deleteRoom", (roomName) => {
+    videocall.deleteRoom(roomName);
+  });
 
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
@@ -109,5 +124,6 @@ app.use("/api/v1/users", userRouter)
 app.use("/api/v1/channels", verifyUserJWT, channelRouter)
 app.use("/api/v1/servers", verifyUserJWT, serverRouter)
 app.use("/api/v1/messages", verifyUserJWT, messageRouter)
+app.use("/api/v1/videocall", verifyUserJWT, videocallRoute);
 
 export default server;

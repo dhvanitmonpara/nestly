@@ -60,6 +60,10 @@ function Layout() {
       console.log(`✅ Joined server: ${serverId}`);
     });
 
+    s.on("roomsList", (rooms) => {
+      console.log("Available rooms:", rooms);
+    });
+
     const serverIds = servers.map(s => s.id.toString())
     s.emit("joinServer", serverIds)
     // s.on("message", handleIncomingMessage)

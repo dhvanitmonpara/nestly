@@ -27,7 +27,7 @@ function ChannelCard({ id, name, setChannel, type, isOwner = false }: { id: numb
     const { handleAuthError } = useHandleAuthError()
     const navigate = useNavigate()
 
-    const { serverId } = useParams()
+    const { serverId, channelId } = useParams()
 
     const handleDeleteServer = async () => {
         const toastId = toast.loading(`Deleting the server ${name}`)
@@ -77,7 +77,7 @@ function ChannelCard({ id, name, setChannel, type, isOwner = false }: { id: numb
     }
 
     return (
-        <Link to={`/s/${serverId}/c/${id}`} key={id} className={`flex items-center justify-between group ${editMode ? "transition-colors" : "px-3 hover:bg-zinc-700/50"} cursor-pointer rounded-md`}>
+        <Link to={`/s/${serverId}/c/${id}${type === "voice" ? "/rooms" : ""}`} key={id} className={`flex items-center justify-between group ${editMode ? "transition-colors" : "px-3 hover:bg-zinc-700/50"} ${id.toString() === channelId && "bg-zinc-700/50"} cursor-pointer rounded-md`}>
             {editMode
                 ? <div className="bg-zinc-700/70 rounded-md relative w-full">
                     <input

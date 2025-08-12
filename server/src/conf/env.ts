@@ -18,6 +18,9 @@ const envSchema = z.object({
   REFRESH_TOKEN_EXPIRY: z.string(),
   GMAIL_USER: z.email(),
   GMAIL_APP_PASSWORD: z.string(),
+  LIVEKIT_URL: z.string(),
+  LIVEKIT_API_KEY: z.string(),
+  LIVEKIT_API_SECRET: z.string(),
 });
 
 export const env = envSchema.parse(process.env);
