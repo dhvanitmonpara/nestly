@@ -132,7 +132,7 @@ function ChatPage() {
           <div ref={messagesEndRef} />
         </div>
       </div>
-      <OnlineUsers />
+      <OnlineUsers channelName={channel?.name ?? null} />
     </div>
   )
 }

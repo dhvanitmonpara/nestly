@@ -14,6 +14,8 @@ import axios from 'axios';
 import env from '../conf/env';
 import useUserStore from '../store/userStore';
 import { Loader2 } from 'lucide-react';
+import useSocket from '../socket/useSocket';
+import useServerStore from '../store/serverStore';
 
 export default function App() {
   const [loading, setLoading] = useState(true)
@@ -24,13 +26,17 @@ export default function App() {
     dynacast: true,
   }));
 
-  const { channelId } = useParams()
+  const { channelId, serverId } = useParams()
   const user = useUserStore(s => s.user)
+  const addRoomParticipant = useServerStore(s => s.addRoomParticipant)
+  const removeRoomParticipant = useServerStore(s => s.removeRoomParticipant)
+  const socket = useSocket()
 
   // Connect to room
   useEffect(() => {
-    if (!user?.username || !channelId) return;
+    if (!user?.username || !channelId || !socket.socket || !serverId) return;
 
+    const s = socket.socket;
     let mounted = true;
 
     const connect = async () => {
@@ -46,15 +52,21 @@ export default function App() {
       if (mounted) {
         await room.connect(env.LIVEKIT_URL, token);
         setLoading(false);
+        s.emit('userJoined', { room: channelId, serverId });
+        addRoomParticipant(channelId);
       }
+
     };
     connect();
 
     return () => {
+      s.emit("userLeft", { room: channelId, serverId });
+      removeRoomParticipant(channelId);
       mounted = false;
       room.disconnect();
     };
-  }, [channelId, room, user?.username]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [channelId, room, serverId, socket.socket, user?.username]);
 
   if (loading) return <div className='h-full w-full p-4 bg-zinc-900/10'>
     <div className='h-full w-full flex justify-center items-center rounded-xl bg-zinc-800/80'>

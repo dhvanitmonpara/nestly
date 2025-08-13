@@ -6,7 +6,7 @@ import useUserStore from "../store/userStore";
 type IncomingUserType = { userId: string, username: string, channelId: string, serverIds: string[] }
 
 
-function OnlineUsers() {
+function OnlineUsers({ channelName }: { channelName: string | null }) {
 
     const [onlineUsers, setOnlineUsers] = useState<IncomingUserType[]>([])
     const socket = useSocket()
@@ -47,9 +47,9 @@ function OnlineUsers() {
 
     return (
         <div className="h-full overflow-y-auto w-96 bg-zinc-800">
-            <div className="p-4 font-semibold text-lg flex">
-                <span>
-                    Online Users
+            <div className="p-4 font-semibold flex">
+                <span className="text-zinc-300">
+                    Online Users {channelName ? `in ${channelName}` : null}
                 </span>
                 <span className="bg-zinc-900 rounded-xl w-10 ml-2 text-xs flex justify-center items-center">{onlineUsers.length}</span>
             </div>

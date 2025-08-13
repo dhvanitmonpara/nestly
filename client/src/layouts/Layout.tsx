@@ -19,6 +19,8 @@ function Layout() {
   const servers = useServerStore(s => s.servers)
   const setServers = useServerStore(s => s.setServers)
   const setRooms = useServerStore(s => s.setRooms)
+  const addRoomParticipant = useServerStore(s => s.addRoomParticipant)
+  const removeRoomParticipant = useServerStore(s => s.removeRoomParticipant)
   const socket = useSocket()
   const { serverId } = useParams()
 
@@ -65,6 +67,15 @@ function Layout() {
       setRooms(rooms)
     });
 
+    s.on("notifyUserJoined", (room) => {
+      console.log(`User joined room: ${room}`);
+      addRoomParticipant(room);
+    });
+
+    s.on("notifyUserLeft", (room) => {
+      removeRoomParticipant(room);
+    });
+
     const serverIds = servers.map(s => s.id.toString())
     s.emit("joinServer", serverIds)
     // s.on("message", handleIncomingMessage)
@@ -73,9 +84,12 @@ function Layout() {
       if (socket.socket) {
         // socket.socket.off("message", handleIncomingMessage)
         s.off("serverJoined");
+        s.off("roomsList");
+        s.off("notifyUserJoined");
+        s.off("notifyUserLeft");
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serverId, servers, socket])
 
   return (

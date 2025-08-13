@@ -1,7 +1,8 @@
 import { Router } from 'express';
-import { getToken } from '../controllers/videocall.controller';
+import { getParticipants, getToken } from '../controllers/videocall.controller';
 
 const router = Router();
 router.post('/get-token', getToken);
+router.get('/get-participants/:room', getParticipants);
 
 export default router;

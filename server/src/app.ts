@@ -110,6 +110,14 @@ io.on('connection', (socket) => {
     socket.emit("roomsList", { rooms: participantsPerRoom });
   });
 
+  socket.on("userJoined", ({ room, serverId }) => {
+    socket.to(serverId).emit("notifyUserJoined", room);
+  });
+
+  socket.on("userLeft", ({ room, serverId }) => {
+    socket.to(serverId).emit("notifyUserLeft", room);
+  });
+
   socket.on("deleteRoom", (roomName) => {
     videocall.deleteRoom(roomName);
   });
