@@ -19,6 +19,7 @@ function Channels() {
     const socket = useSocket()
     const { serverId } = useParams()
     const user = useUserStore(s => s.user)
+    const rooms = useServerStore(s => s.rooms)
     const server = useServerStore(s => s.servers.find(s => s.id.toString() === serverId))
 
     useEffect(() => {
@@ -34,7 +35,7 @@ function Channels() {
                 setChannels(res.data.channels);
 
                 if (socket.socket && res.data.channels.length > 0) {
-                    socket.socket.emit("listRooms", res.data.channels.filter((c:IChannel) => c.type === "voice").map((c: IChannel) => c.id.toString()))
+                    socket.socket.emit("listRooms", res.data.channels.filter((c: IChannel) => c.type === "voice").map((c: IChannel) => c.id.toString()))
                 }
             } catch (error) {
                 console.log(error)
@@ -50,11 +51,12 @@ function Channels() {
 
     return (
         <div className="space-y-1">
-            {serverId && <CreateChannelForm setChannel={setChannels} />}
+            {serverId && user?.id === server?.owner_id && <CreateChannelForm setChannel={setChannels} />}
             <Separator className="bg-zinc-800" />
-            {serverId && channels.length > 0 && channels.map(channel => (
-                <ChannelCard key={channel.id} id={channel.id} name={channel.name} type={channel.type} setChannel={setChannels} isOwner={user?.id === server?.owner_id} />
-            ))}
+            {serverId && channels.length > 0 && channels.map(channel => {
+                const count = rooms.find(r => r.name === channel.id.toString())?.participantsCount ?? 0
+                return <ChannelCard key={channel.id} id={channel.id} name={channel.name} roomParticipantsCount={count} type={channel.type} setChannel={setChannels} isOwner={user?.id === server?.owner_id} />
+            })}
         </div>
     )
 }

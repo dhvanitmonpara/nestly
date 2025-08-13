@@ -56,11 +56,13 @@ export default function App() {
     };
   }, [channelId, room, user?.username]);
 
-  if (loading) return <div className='h-full w-full flex justify-center items-center bg-zinc-900/10'>
-    <p className='text-zinc-300 flex space-x-2'>
-      <Loader2 className='animate-spin' />
-      <span>Loading...</span>
-    </p>
+  if (loading) return <div className='h-full w-full p-4 bg-zinc-900/10'>
+    <div className='h-full w-full flex justify-center items-center rounded-xl bg-zinc-800/80'>
+      <p className='text-zinc-300 flex space-x-2'>
+        <Loader2 className='animate-spin' />
+        <span>Joining...</span>
+      </p>
+    </div>
   </div>;
 
   return (

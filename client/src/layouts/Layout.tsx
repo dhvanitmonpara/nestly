@@ -18,6 +18,7 @@ function Layout() {
   const user = useUserStore(s => s.user)
   const servers = useServerStore(s => s.servers)
   const setServers = useServerStore(s => s.setServers)
+  const setRooms = useServerStore(s => s.setRooms)
   const socket = useSocket()
   const { serverId } = useParams()
 
@@ -60,8 +61,8 @@ function Layout() {
       console.log(`✅ Joined server: ${serverId}`);
     });
 
-    s.on("roomsList", (rooms) => {
-      console.log("Available rooms:", rooms);
+    s.on("roomsList", ({ rooms }) => {
+      setRooms(rooms)
     });
 
     const serverIds = servers.map(s => s.id.toString())
@@ -74,6 +75,7 @@ function Layout() {
         s.off("serverJoined");
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serverId, servers, socket])
 
   return (

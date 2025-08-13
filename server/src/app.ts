@@ -106,8 +106,8 @@ io.on('connection', (socket) => {
   socket.on("listRooms", async (roomNames: string[]) => {
     const rooms = await videocall.listRooms();
     console.log(rooms)
-    const participants = await Promise.all(roomNames.map(roomName => videocall.listParticipantsByRoom(roomName)));
-    socket.emit("roomsList", { rooms, participants });
+    const participantsPerRoom = await rooms?.filter(r => roomNames.includes(r.name)).map(r => ({ name: r.name, participantsCount: r.numParticipants }))
+    socket.emit("roomsList", { rooms: participantsPerRoom });
   });
 
   socket.on("deleteRoom", (roomName) => {

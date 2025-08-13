@@ -112,7 +112,7 @@ const SendMessage = ({ setChannel }: { setChannel: React.Dispatch<React.SetState
   }, [channelId, socket.socket])
 
   return (
-    <div className="absolute bottom-0 left-4 w-[calc(100%-30px)]">
+    <div className="absolute bottom-0 left-4 w-[calc(100%-30px)] px-1 overflow-hidden">
       <div className={`text-xs text-zinc-900 bg-violet-500 rounded-t-sm mx-3 px-3 py-1 transition-all duration-100 ${typingUsers.length > 0 ? "translate-y-0" : "translate-y-20"}`}>
         {typingUsers.length > 0 &&
           `${typingUsers.length === 1

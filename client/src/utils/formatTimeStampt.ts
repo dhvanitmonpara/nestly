@@ -6,15 +6,14 @@ function formatTimestamp(isoString: string): string {
   const diffHours: number = diffMs / (1000 * 60 * 60);
 
   if (diffHours < 24) {
-    // Less than 24h → HH:MM:SS (24-hour format)
-    return dt.toLocaleTimeString('en-GB', { hour12: false });
+    // Less than 24h → HH:MM (24-hour format)
+    return dt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
   } else {
     // More than 24h → dd-mm-yy
     const day: string = String(dt.getDate()).padStart(2, '0');
     const month: string = String(dt.getMonth() + 1).padStart(2, '0');
-    const year: string = String(dt.getFullYear()).slice(-2);
-    return `${day}-${month}-${year}`;
+    return `${day}-${month}`;
   }
 }
 
-export default formatTimestamp
+export default formatTimestamp;

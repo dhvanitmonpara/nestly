@@ -18,7 +18,7 @@ import { FaShare, FaVoicemail } from "react-icons/fa";
 import type { IChannel } from "../types/IChannel";
 import { IoChatbubbleSharp } from "react-icons/io5";
 
-function ChannelCard({ id, name, setChannel, type, isOwner = false }: { id: number, name: string, setChannel: React.Dispatch<React.SetStateAction<IChannel[]>>, type: "text" | "voice", isOwner: boolean }) {
+function ChannelCard({ id, name, setChannel, type, roomParticipantsCount, isOwner = false }: { id: number, name: string, setChannel: React.Dispatch<React.SetStateAction<IChannel[]>>, type: "text" | "voice", roomParticipantsCount?: number, isOwner: boolean }) {
 
     const [open, setOpen] = useState(false)
     const [editMode, setEditMode] = useState(false)
@@ -99,41 +99,47 @@ function ChannelCard({ id, name, setChannel, type, isOwner = false }: { id: numb
                         </button>
                     </div>
                 </div>
-                : <div className="flex justify-center items-center space-x-2">
+                : <div className="flex justify-center items-center text-zinc-300 text-sm space-x-2">
                     {type === "text" ? <IoChatbubbleSharp /> : <FaVoicemail />}
                     <span>
                         {name}
                     </span>
                 </div>
             }
-            {!editMode && <DropdownMenu open={open} onOpenChange={setOpen}>
-                <DropdownMenuTrigger onClick={e => e.stopPropagation()} className="hover:bg-zinc-300 hover:text-zinc-900 opacity-0 group-hover:opacity-100 transition-colors p-2 rounded-full cursor-pointer">
-                    <HiDotsHorizontal />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-zinc-800 text-zinc-300 border-zinc-800">
-                    <DropdownMenuItem onClick={() => {
-                        setEditMode(true)
-                        setEditInput(name)
-                    }} className="text-zinc-100 flex justify-start items-center space-x-1">
-                        <MdEdit className="text-zinc-300" />
-                        <span className="text-sm font-semibold text-zinc-300">Edit</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleShare} className="text-zinc-100 flex justify-start items-center space-x-1">
-                        <FaShare className="text-zinc-300" />
-                        <span className="text-sm font-semibold text-zinc-300">Share</span>
-                    </DropdownMenuItem>
-                    {isOwner
-                        ? <DropdownMenuItem onClick={handleDeleteServer} variant="destructive" className="text-zinc-300 flex justify-start items-center space-x-1">
-                            <MdDelete />
-                            <span className="text-sm font-semibold">Delete</span>
+            {!editMode && <div className="space-x-1 flex justify-center items-center">
+                <DropdownMenu open={open} onOpenChange={setOpen}>
+                    <DropdownMenuTrigger onClick={e => e.stopPropagation()} className="hover:bg-zinc-300 hover:text-zinc-900 opacity-0 group-hover:opacity-100 transition-colors px-2 py-1 my-1 rounded-full cursor-pointer">
+                        <HiDotsHorizontal />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="bg-zinc-800 text-zinc-300 border-zinc-800">
+                        {isOwner && <DropdownMenuItem onClick={() => {
+                            setEditMode(true)
+                            setEditInput(name)
+                        }} className="text-zinc-100 flex justify-start items-center space-x-1">
+                            <MdEdit className="text-zinc-300" />
+                            <span className="text-sm font-semibold text-zinc-300">Edit</span>
+                        </DropdownMenuItem>}
+                        <DropdownMenuItem onClick={handleShare} className="text-zinc-100 flex justify-start items-center space-x-1">
+                            <FaShare className="text-zinc-300" />
+                            <span className="text-sm font-semibold text-zinc-300">Share</span>
                         </DropdownMenuItem>
-                        : <DropdownMenuItem onClick={handleDeleteServer} variant="destructive" className="text-zinc-300 flex justify-start items-center space-x-1">
-                            <MdDelete />
-                            <span className="text-sm font-semibold">Leave</span>
-                        </DropdownMenuItem>
-                    }
-                </DropdownMenuContent>
-            </DropdownMenu>}
+                        {isOwner
+                            ? <DropdownMenuItem onClick={handleDeleteServer} variant="destructive" className="text-zinc-300 flex justify-start items-center space-x-1">
+                                <MdDelete />
+                                <span className="text-sm font-semibold">Delete</span>
+                            </DropdownMenuItem>
+                            : <DropdownMenuItem onClick={handleDeleteServer} variant="destructive" className="text-zinc-300 flex justify-start items-center space-x-1">
+                                <MdDelete />
+                                <span className="text-sm font-semibold">Leave</span>
+                            </DropdownMenuItem>
+                        }
+                    </DropdownMenuContent>
+                </DropdownMenu>
+                {Boolean(roomParticipantsCount) && <span className="px-3 text-sm inline-block rounded-xl bg-zinc-700">
+                    {roomParticipantsCount}
+                </span>}
+            </div>
+            }
         </Link>
     )
 }
