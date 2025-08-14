@@ -99,7 +99,7 @@ function ChannelCard({ id, name, setChannel, type, roomParticipantsCount, isOwne
                         </button>
                     </div>
                 </div>
-                : <div className="flex justify-center items-center text-zinc-300 text-sm space-x-2">
+                : <div className="flex justify-center items-center text-zinc-300 font-semibold text-sm space-x-2">
                     {type === "text" ? <IoChatbubbleSharp /> : <FaVoicemail />}
                     <span>
                         {name}

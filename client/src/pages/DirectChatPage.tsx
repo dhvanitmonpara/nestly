@@ -78,11 +78,19 @@ function DirectChatPage() {
       });
     };
 
-    s.emit("userOnlineDM", { userId: user.id, conversationId });
+    s.emit("userOnlineDM", {
+      userId: user.id,
+      conversationId: conversationId.toString(),
+    });
+    console.log("emmited");
 
     s.on("message", handleMessage);
 
     return () => {
+      s.emit("userGotOfflineDM", {
+        userId: user.id,
+        conversationId: conversationId.toString(),
+      });
       s.off("message", handleMessage);
     };
   }, [conversationId, socket.socket, user?.id]);
@@ -111,7 +119,7 @@ function DirectChatPage() {
               <div className="px-4 pt-10 pb-60">
                 <div className="px-6 pb-4 text-lg font-semibold text-zinc-200">
                   <h3>
-                    Welcome to{" "}
+                    This is the beginning of an incredible conversation with{" "}
                     {conversation?.user_id1 === user?.id
                       ? conversation?.user2?.display_name
                       : conversation?.user1?.display_name}
@@ -136,7 +144,11 @@ function DirectChatPage() {
                         key={chat.id}
                         continuesMessage={!isFirstFromUser}
                         id={chat.id}
-                        accent_color={chat.sender_id === conversation.user_id1 ? conversation.user1.accent_color : conversation.user2.accent_color}
+                        accent_color={
+                          chat.sender_id === conversation.user_id1
+                            ? conversation.user1.accent_color
+                            : conversation.user2.accent_color
+                        }
                         content={chat.content}
                         createdAt={chat?.createdAt ?? null}
                         username={

@@ -67,11 +67,11 @@ function Conversations() {
           <Conversation
             key={c.id}
             id={c.id}
-            accent_color={c.user_id1 === user?.id ? c.user1.accent_color : c.user2.accent_color}
+            accent_color={c.user_id1 === user?.id ? c.user2.accent_color : c.user1.accent_color}
             name={
               c.user_id1 === user?.id
-                ? c.user1.display_name
-                : c.user2.display_name
+                ? c.user2.display_name
+                : c.user1.display_name
             }
             setConversation={setConversations}
           />
@@ -96,7 +96,7 @@ const CreateConversationButton = ({setConversations}:{setConversations: React.Di
         { withCredentials: true }
       );
 
-      if (res.status !== 200) {
+      if (res.status !== 200 && res.status !== 201) {
         toast.error("Failed to create a conversation");
         return;
       }

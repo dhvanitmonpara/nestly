@@ -22,10 +22,9 @@ function SendMessage<T extends IChannel | IConversation>({
   const typingTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const navigate = useNavigate();
-  const { channelId, conversationId } = useParams();
+  const { channelId, serverId, conversationId } = useParams();
   const socket = useSocket();
   const user = useUserStore((s) => s.user);
-  const { serverId } = useParams();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -52,12 +51,6 @@ function SendMessage<T extends IChannel | IConversation>({
         id: Date.now().toString(),
         content: message,
         conversation_id: conversationId,
-        sender: {
-          id: user.id,
-          accent_color: user.accent_color,
-          username: user.username,
-          display_name: user.display_name,
-        },
         sender_id: user.id,
       };
     } else if (channelId) {
@@ -83,7 +76,10 @@ function SendMessage<T extends IChannel | IConversation>({
       } as T;
     });
 
-    socket.socket.emit("message", { ...newMessage, serverId });
+    socket.socket.emit("message", {
+      ...newMessage,
+      serverId: serverId ?? conversationId,
+    });
     setMessage("");
   };
 
@@ -174,6 +170,6 @@ function SendMessage<T extends IChannel | IConversation>({
       </form>
     </div>
   );
-};
+}
 
 export default SendMessage;

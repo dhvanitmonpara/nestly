@@ -72,7 +72,7 @@ io.on("connection", (socket) => {
     if (msg.user?.id) {
       createMessage(msg.content, msg.user.id, msg.channel_id);
     } else {
-      createDirectMessage(msg.content, msg.sender.id, msg.conversation_id);
+      createDirectMessage(msg.content, msg.sender_id, msg.conversation_id);
     }
     socket.to(msg.serverId).emit("message", msg);
   });
@@ -86,7 +86,7 @@ io.on("connection", (socket) => {
     socket.join(conversationId);
     socket
       .to(conversationId)
-      .emit("userGotOnlineDM", { userId, conversationId });
+      .emit("userGotOnlineDM", { userId, conversationId, username: socket.username });
     const onlineUsersSockets = io.sockets.adapter.rooms.get(conversationId);
     const onlineUsers = Array.from(onlineUsersSockets || []).map((socketId) => {
       const sock = io.sockets.sockets.get(socketId); // socket instance
@@ -108,19 +108,27 @@ io.on("connection", (socket) => {
   socket.on("userGotOnlineDM", ({ userId, conversationId }) => {
     socket
       .to(conversationId)
-      .emit("userGotOnlineDM", { userId, conversationId });
+      .emit("userGotOnlineDM", {
+        userId,
+        conversationId,
+        username: socket.username,
+      });
+  });
+
+  socket.on("userGotOfflineDM", ({ userId, conversationId }) => {
+    socket
+      .to(conversationId)
+      .emit("userGotOfflineDM", { userId, conversationId });
   });
 
   socket.on("userOnline", ({ channelId, serverId }) => {
     socket.channel = channelId;
-    socket
-      .to(serverId)
-      .emit("userGotOnline", {
-        channelId,
-        userId: socket.userId,
-        serverId,
-        username: socket.username,
-      });
+    socket.to(serverId).emit("userGotOnline", {
+      channelId,
+      userId: socket.userId,
+      serverId,
+      username: socket.username,
+    });
     const onlineUsersSockets = io.sockets.adapter.rooms.get(serverId);
     const onlineUsers = Array.from(onlineUsersSockets || []).map((socketId) => {
       const sock = io.sockets.sockets.get(socketId); // socket instance

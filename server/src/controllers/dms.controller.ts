@@ -13,22 +13,57 @@ export const createDirectConversation = async (req: Request, res: Response) => {
     if (!user_id1 || !user_id2)
       throw new ApiError(400, "User ID 1 and 2 are required");
 
-    const [conversation] = await DirectConversation.findOrCreate({
+    const conversation = await DirectConversation.findOne({
       where: {
         [Op.or]: [
           { user_id1, user_id2 },
           { user_id1: user_id2, user_id2: user_id1 },
         ],
       },
-      defaults: {
-        user_id1,
-        user_id2,
-      },
+      include: [
+        {
+          model: User,
+          as: "user1",
+          attributes: ["username", "id", "display_name", "accent_color"],
+        },
+        {
+          model: User,
+          as: "user2",
+          attributes: ["username", "id", "display_name", "accent_color"],
+        },
+      ],
     });
 
-    return res.status(200).json({
-      message: "Direct conversation has been created successfully",
-      conversation,
+    if (conversation) {
+      return res.status(200).json({
+        message: "Direct conversation has been created successfully",
+        conversation,
+      });
+    }
+
+    const newConversation = await DirectConversation.create({
+      user_id1,
+      user_id2,
+    });
+
+    const createdConversation = await DirectConversation.findByPk(newConversation.dataValues.id, {
+      include: [
+        {
+          model: User,
+          as: "user1",
+          attributes: ["username", "id", "display_name", "accent_color"],
+        },
+        {
+          model: User,
+          as: "user2",
+          attributes: ["username", "id", "display_name", "accent_color"],
+        },
+      ],
+    });
+
+    return res.status(201).json({
+      message: "Direct conversation created successfully",
+      conversation: createdConversation,
     });
   } catch (error) {
     handleError(
@@ -132,7 +167,7 @@ export const getDirectConversationMessages = async (
     const messages = await DirectMessage.findAll({
       where: {
         conversation_id: id,
-      }
+      },
     });
 
     return res.status(200).json({

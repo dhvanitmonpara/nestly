@@ -66,7 +66,7 @@ function DirectConversationCard({
     >
       <div
         key={id}
-        className="py-2 flex justify-start space-x-2 w-full items-center text-zinc-300 hover:text-zinc-100"
+        className="py-2 flex justify-start space-x-2 w-full items-center text-zinc-300"
       >
         <div style={{color:`#${accent_color}`}} className="font-semibold bg-zinc-900 rounded-full w-7 h-7 text-xs flex items-center justify-center">
           {name.slice(0, 2)}
