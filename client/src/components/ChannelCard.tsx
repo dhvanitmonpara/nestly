@@ -40,7 +40,7 @@ function ChannelCard({ id, name, setChannel, type, roomParticipantsCount, isOwne
             }
 
             setChannel(prev => prev.filter(c => c.id !== id))
-            navigate("/")
+            navigate(`/s/${serverId}`);
 
         } catch (error) {
             handleAuthError(error as AxiosError)

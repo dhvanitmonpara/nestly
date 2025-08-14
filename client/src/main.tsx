@@ -4,7 +4,6 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import NotFoundPage from './pages/NotFoundPage.tsx'
 import Layout from './layouts/Layout.tsx'
 import ChatPage from './pages/ChatPage.tsx'
-import SelectChatPage from './pages/SelectChatPage.tsx'
 import SigninPage from './pages/SigninPage.tsx'
 import SignupPage from './pages/SignupPage.tsx'
 import AuthLayout from './layouts/AuthLayout.tsx'
@@ -14,6 +13,9 @@ import { SocketProvider } from './socket/socketContext.tsx'
 import ProfilePage from './pages/ProfilePage.tsx'
 import JoinServerPage from './pages/JoinServerPage.tsx'
 import Room from './components/Room.tsx'
+import { FaMessage, FaUserGroup } from 'react-icons/fa6'
+import ShowWarning from './components/ShowWarning.tsx'
+import DirectChatPage from './pages/DirectChatPage.tsx'
 
 const router = createBrowserRouter([
   {
@@ -44,11 +46,19 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <SelectChatPage />,
+        element: <ShowWarning text="It seems like you haven't selected any server yet. Select one to continue." icon={<FaUserGroup />} />,
+      },
+      {
+        path: "/dm",
+        element: <ShowWarning text="It seems like you haven't selected any DM yet, select one to continue." icon={<FaMessage/>} />
+      },
+      {
+        path: "/dm/:conversationId",
+        element: <DirectChatPage />,
       },
       {
         path: "/s/:serverId",
-        element: <></>,
+        element: <ShowWarning text="It seems like you haven't selected any channel yet, select one to continue." icon={<FaUserGroup />} />
       },
       {
         path: "/s/:serverId/c/:channelId",
@@ -76,8 +86,8 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')!).render(
   // <StrictMode>
-    <SocketProvider>
-      <RouterProvider router={router} />
-    </SocketProvider>
+  <SocketProvider>
+    <RouterProvider router={router} />
+  </SocketProvider>
   // </StrictMode>,
 )

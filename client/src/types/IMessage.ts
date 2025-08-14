@@ -7,7 +7,7 @@ interface IMessage {
     content: string
     createdAt?: string
     updatedAt?: string
-    user?: IUser
+    user: IUser
 }
 
 export type { IMessage }

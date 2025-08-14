@@ -20,8 +20,6 @@ function ProfileButton() {
   const user = useUserStore(s => s.user)
   const { handleAuthError } = useHandleAuthError()
 
-  const color = `#${user?.accent_color}`
-
   const fetchUser = useCallback(async () => {
     try {
       const user = await axios.get(`${env.SERVER_ENDPOINT}/users/me`, { withCredentials: true })
@@ -45,7 +43,7 @@ function ProfileButton() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="rounded-md w-full p-1 flex space-x-2 cursor-pointer bg-zinc-800 hover:bg-zinc-700/40 transition-colors border-zinc-700 border absolute bottom-1 left-0">
-        <div style={{ color }} className="bg-zinc-900 rounded-full w-8 h-8 flex items-center justify-center">
+        <div style={{ color: `#${user?.accent_color}` }} className="bg-zinc-900 rounded-full w-8 h-8 flex items-center justify-center">
           {user?.display_name.split("")[0].toUpperCase() ?? "U"}
         </div>
         <div>

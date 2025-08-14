@@ -11,7 +11,7 @@ function OnlineUsers({ channelName }: { channelName: string | null }) {
     const [onlineUsers, setOnlineUsers] = useState<IncomingUserType[]>([])
     const socket = useSocket()
     const user = useUserStore(s => s.user)
-    const { channelId, serverId } = useParams<{ channelId: string, serverId: string }>()
+    const { channelId, serverId, conversationId } = useParams<{ channelId: string, serverId: string, conversationId: string }>()
 
     useEffect(() => {
         setOnlineUsers([]);
@@ -38,12 +38,27 @@ function OnlineUsers({ channelName }: { channelName: string | null }) {
             }
         });
 
+        s.on("userGotOfflineDM", (data) => {
+            console.log("User got offline:", data);
+            setOnlineUsers((prev) => prev.filter((user) => user.userId !== data.userId));
+        });
+
+        s.on("userGotOnlineDM", (data) => {
+            console.log("User got online:", data);
+            if (data.userId === user?.id) return; // Ignore own online status
+            if (data.serverId === serverId && data.conversationId === conversationId) {
+                setOnlineUsers((prev) => [...prev, { userId: data.userId, username: data.username, channelId, serverIds: [serverId] }]);
+            }
+        });
+
         return () => {
             s.off("previousOnlineUsers");
-            s.off("userGotOffline");
+            s.off("userGotOnlineDM");
+            s.off("userGotOfflineDM");
             s.off("userGotOnline");
+            s.off("userGotOffline");
         };
-    }, [channelId, serverId, socket.socket, user?.id]);
+    }, [channelId, conversationId, serverId, socket.socket, user?.id]);
 
     return (
         <div className="h-full overflow-y-auto w-96 bg-zinc-800">

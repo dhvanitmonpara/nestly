@@ -20,10 +20,6 @@ const User = sequelize.define("users", {
     type: DataTypes.CHAR(6),
     defaultValue: "6a7282"
   },
-  // avatar: {
-  //   type: DataTypes.STRING,
-  //   allowNull: true,
-  // },
   password: {
     type: DataTypes.STRING,
     allowNull: false

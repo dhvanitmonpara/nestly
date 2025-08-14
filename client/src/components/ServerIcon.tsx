@@ -97,7 +97,7 @@ function ServerIcon({ id, name, isOwner = false }: { id: number, name: string, i
         <>
             <ContextMenu>
                 <ContextMenuTrigger onClick={e => e.stopPropagation()}>
-                    <Link to={`/s/${id}`} key={id} className={`flex items-center justify-center select-none h-10 w-10 mt-1 transition-all duration-50 font-semibold ${id.toString() === serverId ? "bg-violet-500 rounded-xl" : "bg-zinc-700/50 rounded-full hover:rounded-xl"}  cursor-pointer`}>
+                    <Link to={`/s/${id}`} key={id} className={`flex items-center justify-center select-none h-10 w-10 mt-1 transition-all duration-50 font-semibold ${id.toString() === serverId ? "bg-violet-500 rounded-xl" : "bg-zinc-700/50 text-zinc-300 rounded-full hover:rounded-xl"}  cursor-pointer`}>
                         {name.slice(0, 1).toUpperCase()}
                     </Link>
                 </ContextMenuTrigger>

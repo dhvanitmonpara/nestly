@@ -4,38 +4,37 @@ import { useNavigate, useParams } from "react-router-dom";
 import env from "../conf/env";
 import useSocket from "../socket/useSocket";
 import useUserStore from "../store/userStore";
-import type { IMessage } from "../types/IMessage";
-import type { IChannel } from "../types/IChannel";
 import MessageCard from "../components/MessageCard";
 import SendMessage from "../components/SendMessage";
 import OnlineUsers from "../components/OnlineUsers";
+import type { IConversation } from "../types/IConversation";
+import type { IDirectMessage } from "../types/IDirectMessage";
 
-function ChatPage() {
-  const [channel, setChannel] = useState<IChannel | null>(null);
+function DirectChatPage() {
   const [loading, setLoading] = useState(false);
+  const [conversation, setConversation] = useState<IConversation | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const user = useUserStore((s) => s.user);
   const socket = useSocket();
   const navigate = useNavigate();
 
-  const { channelId, serverId } = useParams<{
-    channelId: string;
-    serverId: string;
+  const { conversationId } = useParams<{
+    conversationId: string;
   }>();
 
   useEffect(() => {
     (async () => {
       setLoading(true);
 
-      if (!channelId || !user) {
+      if (!conversationId || !user) {
         navigate("/");
         return;
       }
 
       try {
         const res = await axios.get(
-          `${env.SERVER_ENDPOINT}/messages/chat/${user.id}/${channelId}`,
+          `${env.SERVER_ENDPOINT}/dms/messages/${conversationId}`,
           { withCredentials: true }
         );
 
@@ -44,54 +43,55 @@ function ChatPage() {
           return;
         }
 
-        setChannel(res.data.channel);
+        setConversation(res.data.conversation);
       } catch (error) {
         console.log(error);
       } finally {
         setLoading(false);
       }
     })();
-  }, [channelId, navigate, user]);
+  }, [conversationId, navigate, user]);
 
   useEffect(() => {
-    if (!socket.socket || !user?.id || !serverId || !channelId) return;
+    if (!socket.socket || !user?.id || !conversationId) return;
 
     const s = socket.socket;
 
-    const handleMessage = (data: IMessage) => {
-      if (!channelId) return;
+    const handleMessage = (data: IDirectMessage) => {
+      if (!conversationId) return;
 
       console.log("Received message:", data);
-      const newMessage: IMessage = {
+      const newMessage: IDirectMessage = {
         id: Date.now().toString(),
         content: data.content,
-        user: data.user,
-        channel_id: channelId,
+        conversation_id: conversationId,
+        sender_id: data.sender_id,
       };
 
-      setChannel((prev) => {
+      setConversation((prev) => {
         return {
           ...prev,
-          messages: prev ? [...prev.messages, newMessage] : newMessage,
-        } as IChannel;
+          messages: prev?.messages
+            ? [...prev.messages, newMessage]
+            : [newMessage],
+        } as IConversation;
       });
     };
 
-    s.emit("userOnline", { channelId, serverId });
+    s.emit("userOnlineDM", { userId: user.id, conversationId });
 
     s.on("message", handleMessage);
 
     return () => {
-      s.emit("ChannelChanged", channelId);
       s.off("message", handleMessage);
     };
-  }, [channelId, serverId, socket.socket, user?.id]);
+  }, [conversationId, socket.socket, user?.id]);
 
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [channel?.messages]);
+  }, []);
 
   return (
     <div className="flex h-full max-h-screen">
@@ -100,7 +100,9 @@ function ChatPage() {
           <div className="h-full">
             <div className="sticky top-0 bg-zinc-900 px-4 pt-4">
               <h1 className="w-full h-12 bg-zinc-800 px-4 rounded-md flex justify-start items-center">
-                {channel?.name ?? "Loading..."}
+                {conversation?.user_id1 === user?.id
+                  ? conversation?.user2?.display_name
+                  : conversation?.user1?.display_name ?? "Loading..."}
               </h1>
             </div>
             {loading ? (
@@ -108,11 +110,16 @@ function ChatPage() {
             ) : (
               <div className="px-4 pt-10 pb-60">
                 <div className="px-6 pb-4 text-lg font-semibold text-zinc-200">
-                  <h3>Welcome to {channel?.name}</h3>
+                  <h3>
+                    Welcome to{" "}
+                    {conversation?.user_id1 === user?.id
+                      ? conversation?.user2?.display_name
+                      : conversation?.user1?.display_name}
+                  </h3>
                 </div>
-                {channel?.messages && channel.messages.length > 0 ? (
-                  channel.messages.map((chat) => {
-                    const messages = channel?.messages || [];
+                {conversation?.messages && conversation.messages.length > 0 ? (
+                  conversation.messages.map((chat) => {
+                    const messages = conversation?.messages || [];
                     const currentIndex = messages.findIndex(
                       (m) => m.id === chat.id
                     ); // find current message position
@@ -123,16 +130,20 @@ function ChatPage() {
 
                     // Check if it's the first in the sequence
                     const isFirstFromUser =
-                      prevMessage?.user?.id !== chat.user?.id;
+                      prevMessage?.sender_id !== chat.sender_id;
                     return (
                       <MessageCard
                         key={chat.id}
                         continuesMessage={!isFirstFromUser}
                         id={chat.id}
-                        accent_color={chat.user?.accent_color}
+                        accent_color={chat.sender_id === conversation.user_id1 ? conversation.user1.accent_color : conversation.user2.accent_color}
                         content={chat.content}
                         createdAt={chat?.createdAt ?? null}
-                        username={chat.user?.display_name}
+                        username={
+                          chat.sender_id === conversation.user_id1
+                            ? conversation.user1.display_name
+                            : conversation.user2.display_name
+                        }
                       />
                     );
                   })
@@ -144,13 +155,19 @@ function ChatPage() {
               </div>
             )}
           </div>
-          <SendMessage<IChannel> setChannel={setChannel} />
+          <SendMessage<IConversation> setChannel={setConversation} />
           <div ref={messagesEndRef} />
         </div>
       </div>
-      <OnlineUsers channelName={channel?.name ?? null} />
+      <OnlineUsers
+        channelName={
+          (conversation?.user_id1 === user?.id
+            ? conversation?.user2?.display_name
+            : conversation?.user1?.display_name) ?? null
+        }
+      />
     </div>
   );
 }
 
-export default ChatPage;
+export default DirectChatPage;

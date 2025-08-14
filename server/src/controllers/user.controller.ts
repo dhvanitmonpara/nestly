@@ -1,8 +1,6 @@
 import { Request, Response } from "express";
 import { ApiError } from "../utils/ApiError";
-import {
-  hashOTP,
-} from "../utils/cryptographer";
+import { hashOTP } from "../utils/cryptographer";
 import jwt from "jsonwebtoken";
 import sendMail from "../utils/sendMail";
 import handleError from "../utils/HandleError";
@@ -11,6 +9,7 @@ import { env } from "../conf/env";
 import User from "../models/user.model";
 import bcrypt from "bcryptjs";
 import nodeCache from "../services/cache.service";
+import { Op } from "sequelize";
 
 const userService = new UserService();
 
@@ -21,9 +20,10 @@ export const initializeUser = async (req: Request, res: Response) => {
     if (!email || !password || !username)
       throw new ApiError(400, "All fields are required");
 
-    const existingUser = await User.findOne({
-      where: { email: email }
-    }) ?? null
+    const existingUser =
+      (await User.findOne({
+        where: { email: email },
+      })) ?? null;
 
     if (existingUser)
       throw new ApiError(400, "User with this email already exists");
@@ -52,11 +52,7 @@ export const initializeUser = async (req: Request, res: Response) => {
     const hashedOTP = await hashOTP(mailResponse.otpCode);
     if (!hashedOTP) throw new ApiError(500, "Failed to hash OTP");
 
-    const otpCacheSuccess = nodeCache.set(
-      `otp:${email}`,
-      hashedOTP,
-      65
-    );
+    const otpCacheSuccess = nodeCache.set(`otp:${email}`, hashedOTP, 65);
 
     if (!otpCacheSuccess) {
       throw new ApiError(500, "Failed to set OTP in Redis");
@@ -89,16 +85,19 @@ export const registerUser = async (req: Request, res: Response) => {
       username: string;
     };
 
-    const encryptedPassword = await bcrypt.hash(password, 12)
+    const encryptedPassword = await bcrypt.hash(password, 12);
 
-    const createdUser = await User.create({
-      email,
-      password: encryptedPassword,
-      username,
-      display_name: username
-    }, {
-      returning: true
-    })
+    const createdUser = await User.create(
+      {
+        email,
+        password: encryptedPassword,
+        username,
+        display_name: username,
+      },
+      {
+        returning: true,
+      }
+    );
 
     if (!createdUser) {
       res.status(400).json({ error: "Failed to create user" });
@@ -156,17 +155,21 @@ export const loginUser = async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
     const existingUser = await User.findOne({
-      where: { email: email }
-    })
+      where: { email: email },
+    });
 
     if (!existingUser) throw new ApiError(400, "User not found");
-    if (!existingUser.dataValues.password) throw new ApiError(400, "Password not found")
+    if (!existingUser.dataValues.password)
+      throw new ApiError(400, "Password not found");
 
     if (!(await bcrypt.compare(password, existingUser.dataValues.password)))
       throw new ApiError(400, "Invalid password");
 
     const { accessToken, refreshToken, userAgent, ip } =
-      await userService.generateAccessAndRefreshToken(existingUser.dataValues.id.toString(), req);
+      await userService.generateAccessAndRefreshToken(
+        existingUser.dataValues.id.toString(),
+        req
+      );
 
     if (!accessToken || !refreshToken) {
       res
@@ -222,21 +225,21 @@ export const getUserData = async (req: Request, res: Response) => {
 
 export const getUserById = async (req: Request, res: Response) => {
   try {
-    const { userId } = req.params
-    if (!userId) throw new ApiError(400, "User Id is required")
+    const { userId } = req.params;
+    if (!userId) throw new ApiError(400, "User Id is required");
 
-    const user = await User.findByPk(userId)
+    const user = await User.findByPk(userId);
 
-    if (!user) throw new ApiError(404, "User doesn't exists")
+    if (!user) throw new ApiError(404, "User doesn't exists");
 
     return res.status(200).json({
       message: "User feteched successfully",
-      data: user
-    })
+      data: user,
+    });
   } catch (error) {
     handleError(error, res, "Failed to fetch a user", "GET_USER_ERROR");
   }
-}
+};
 
 export const logoutUser = async (req: Request, res: Response) => {
   try {
@@ -244,7 +247,7 @@ export const logoutUser = async (req: Request, res: Response) => {
       throw new ApiError(400, "User not found");
     }
 
-    const user = await User.findByPk(req.user.id)
+    const user = await User.findByPk(req.user.id);
     if (!user) {
       throw new ApiError(400, "User not found");
     }
@@ -253,9 +256,7 @@ export const logoutUser = async (req: Request, res: Response) => {
 
     await User.update(
       {
-        refresh_token: JSON.stringify(
-          user.dataValues.refresh_token
-        )
+        refresh_token: JSON.stringify(user.dataValues.refresh_token),
       },
       { where: { id: req.user.id } }
     );
@@ -287,16 +288,20 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
       throw new ApiError(401, "Invalid Access Token");
     }
 
-    const user = await User.findByPk(decodedToken?.id)
+    const user = await User.findByPk(decodedToken?.id);
 
-    if (!user || !user.dataValues.refresh_token) throw new ApiError(401, "Invalid Refresh Token");
+    if (!user || !user.dataValues.refresh_token)
+      throw new ApiError(401, "Invalid Refresh Token");
 
     if (!user.dataValues.refresh_token.includes(incomingRefreshToken)) {
       throw new ApiError(401, "Refresh token is invalid or not recognized");
     }
 
     const { accessToken, refreshToken } =
-      await userService.generateAccessAndRefreshToken(user.dataValues.id.toString(), req);
+      await userService.generateAccessAndRefreshToken(
+        user.dataValues.id.toString(),
+        req
+      );
 
     res
       .status(200)
@@ -360,21 +365,25 @@ export const updateUser = async (req: Request, res: Response) => {
 
     const updatedUser = await User.update(
       { accent_color },
-      { where: { id: req.user.id } },
+      { where: { id: req.user.id } }
     );
 
     if (!updatedUser) throw new ApiError(404, "User not found");
 
-    res.status(200).json({ message: "User updated successfully", data: updatedUser });
+    res
+      .status(200)
+      .json({ message: "User updated successfully", data: updatedUser });
   } catch (error) {
-    handleError(error as ApiError, res, "Failed to update user", "UPDATE_USER_ERROR");
+    handleError(
+      error as ApiError,
+      res,
+      "Failed to update user",
+      "UPDATE_USER_ERROR"
+    );
   }
 };
 
-const OtpVerifier = async (
-  email: string,
-  otp: string,
-) => {
+const OtpVerifier = async (email: string, otp: string) => {
   try {
     const storedOtp = nodeCache.get(`otp:${email}`);
 
@@ -409,6 +418,35 @@ export const verifyOtp = async (req: Request, res: Response) => {
       res,
       "Failed to verify OTP",
       "VERIFY_OTP_ERROR"
+    );
+  }
+};
+
+export const searchUsers = async (req: Request, res: Response) => {
+  try {
+    const { query } = req.params;
+
+    if (!query) throw new ApiError(400, "Query is required");
+
+    const users = await User.findAll({
+      where: {
+        [Op.or]: [
+          { username: { [Op.like]: `%${query}%` } },
+          { email: { [Op.like]: `%${query}%` } },
+        ],
+      },
+      attributes: ["id", "username", "email", "accent_color", "display_name"],
+    });
+
+    res
+      .status(200)
+      .json({ message: "Users fetched successfully", results: users });
+  } catch (error) {
+    handleError(
+      error as ApiError,
+      res,
+      "Failed to search users",
+      "SEARCH_USER"
     );
   }
 };
