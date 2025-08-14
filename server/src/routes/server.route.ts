@@ -4,7 +4,7 @@ import { createServer, joinServer, leaveServer, getJoinedServer, getServerDetail
 const router = Router();
 router.post('/create', createServer);
 router.post('/join', joinServer);
-router.post('/leave', leaveServer);
+router.delete('/leave/:serverId', leaveServer);
 router.get('/joined/:userId', getJoinedServer);
 router.delete('/delete/:serverId', deleteServer);
 router.put('/update/:serverId', updateServer);

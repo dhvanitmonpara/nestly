@@ -21,7 +21,8 @@ const useUserStore = create<UserState>((set) => ({
                 id: 0,
                 username: "",
                 display_name: "",
-                email: ""
+                email: "",
+                accent_color: ""
             },
         }),
 }));

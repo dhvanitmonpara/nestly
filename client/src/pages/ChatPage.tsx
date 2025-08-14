@@ -133,6 +133,7 @@ function ChatPage() {
                         content={chat.content}
                         createdAt={chat?.createdAt ?? null}
                         username={chat.user?.display_name}
+                        setChannel={setChannel}
                       />
                     );
                   })

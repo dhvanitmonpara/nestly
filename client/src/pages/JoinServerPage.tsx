@@ -67,7 +67,7 @@ function JoinServerPage() {
                 return
             }
 
-            navigate(`/c/${serverId}`)
+            navigate(`/s/${serverId}`)
         } catch (error) {
             handleAuthError(error as AxiosError)
         } finally {

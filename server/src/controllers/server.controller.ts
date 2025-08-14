@@ -109,16 +109,16 @@ export const getServerDetailsById = async (req: Request, res: Response) => {
 
 export const leaveServer = async (req: Request, res: Response) => {
   if (!req.user) throw new ApiError(400, "Unauthorized")
-  const { server_id } = req.body;
+  const { serverId } = req.params;
   const user_id = req.user.id
-  if (!server_id)
+  if (!serverId)
     throw new ApiError(400, "Server ID is required");
 
   try {
     const serverMembers = await Member.destroy({
       where: {
         user_id: user_id,
-        server_id: server_id
+        server_id: serverId
       }
     })
 
@@ -197,6 +197,18 @@ export const deleteServer = async (req: Request, res: Response) => {
     })
 
     const channelIds = channels.map(c => c.dataValues.id)
+
+    await Message.destroy({
+      where: {
+        channel_id: { [Op.in]: channelIds }
+      }
+    });
+
+    await Member.destroy({
+      where: {
+        server_id: serverId
+      }
+    })
 
     await Channel.destroy({
       where: {

@@ -20,6 +20,7 @@ import Channels from "../components/Channels";
 import { Separator } from "../components/ui/separator";
 import { FaMessage } from "react-icons/fa6";
 import Conversations from "../components/Conversations";
+import UpdateServerForm from "../components/UpdateServerForm";
 
 function Layout() {
   const user = useUserStore((s) => s.user);
@@ -132,12 +133,26 @@ function Layout() {
           <CreateChannelForm />
         </section>
         <div className="w-[250px] py-6 px-4 bg-zinc-800/50 relative">
-          <h3 className="flex justify-between items-center">
-            <Link className="text-xl font-semibold" to={location.includes("/dm") ? "/dm" : `/s/${serverId}`}>
+          <Link
+            className="text-xl font-semibold flex justify-between items-center group"
+            to={location.includes("/dm") ? "/dm" : `/s/${serverId}`}
+          >
+            <span className="inline-block">
               {servers.find((s) => s.id.toString() === serverId)?.name ||
                 (location.includes("/dm") ? "Direct Messages" : "TechyScord")}
-            </Link>
-          </h3>
+            </span>
+            {serverId && (
+              <span className="inline-block">
+                <UpdateServerForm
+                  id={Number(serverId)}
+                  name={
+                    servers.find((s) => s.id.toString() === serverId)?.name ||
+                    ""
+                  }
+                />
+              </span>
+            )}
+          </Link>
           <input
             type="text"
             placeholder="Search a channel"
