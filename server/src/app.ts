@@ -10,7 +10,8 @@ declare module "socket.io" {
   interface Socket {
     userId?: string;
     username?: string;
-    channel?: string;
+    accent_color?: string;
+    display_name?: string;
   }
 }
 import healthRouter from "./routes/health.route";
@@ -53,11 +54,11 @@ const videocall = new VideocallService();
 io.on("connection", (socket) => {
   socket.userId = socket.handshake.auth.userId as string;
   socket.username = socket.handshake.auth.username as string;
-  socket.channel = socket.handshake.auth.channel as string;
+  socket.accent_color = socket.handshake.auth.accent_color as string;
+  socket.display_name = socket.handshake.auth.display_name as string;
 
-  const handleChannelChange = (channelId: string | null) => {
+  const handleUserGotOffline = () => {
     const serverIds = Array.from(socket.rooms);
-    socket.channel = channelId ?? "";
     socket.to(serverIds).emit("userGotOffline", { userId: socket.userId });
   };
 
@@ -94,77 +95,96 @@ io.on("connection", (socket) => {
       const sock = io.sockets.sockets.get(socketId); // socket instance
       if (sock && sock.userId) {
         return {
-          userId: sock.userId,
-          username: sock.username,
-          serverIds: Array.from(sock.rooms),
-          channelId: sock.channel,
+          server_id: Array.from(sock.rooms),
+          user: {
+            accent_color: sock.accent_color,
+            display_name: sock.display_name,
+            username: sock.username,
+          },
+          user_id: sock.userId,
+          isOnline: true,
         };
       }
     });
     socket.emit(
       "previousOnlineUsers",
-      onlineUsers.filter((u) => u?.userId !== socket.userId)
+      onlineUsers.filter((u) => u?.user_id !== socket.userId)
     );
   });
 
   socket.on("userGotOnlineDM", ({ userId, conversationId }) => {
     socket.to(conversationId).emit("userGotOnlineDM", {
-      userId,
-      conversationId,
-      username: socket.username,
+      server_id: conversationId,
+      user: {
+        accent_color: socket.accent_color,
+        display_name: socket.display_name,
+        username: socket.username,
+      },
+      user_id: socket.userId,
+      isOnline: true,
     });
   });
 
   socket.on("userGotOfflineDM", ({ userId, conversationId }) => {
     socket
       .to(conversationId)
-      .emit("userGotOfflineDM", { userId, conversationId });
+      .emit("userGotOfflineDM", {
+        user_id: userId,
+        conversation_id: conversationId,
+      });
   });
 
-  socket.on("userOnline", ({ channelId, serverId }) => {
-    socket.channel = channelId;
+  socket.on("userOnline", ({ serverId }) => {
     socket.to(serverId).emit("userGotOnline", {
-      channelId,
-      userId: socket.userId,
-      serverId,
-      username: socket.username,
+      server_id: serverId,
+      user: {
+        accent_color: socket.accent_color,
+        display_name: socket.display_name,
+        username: socket.username,
+      },
+      user_id: socket.userId,
+      isOnline: true,
     });
     const onlineUsersSockets = io.sockets.adapter.rooms.get(serverId);
     const onlineUsers = Array.from(onlineUsersSockets || []).map((socketId) => {
       const sock = io.sockets.sockets.get(socketId); // socket instance
       if (sock && sock.userId) {
         return {
-          userId: sock.userId,
-          username: sock.username,
-          serverIds: Array.from(sock.rooms),
-          channelId: sock.channel,
+          server_id: Array.from(sock.rooms),
+          user: {
+            accent_color: sock.accent_color,
+            display_name: sock.display_name,
+            username: sock.username,
+          },
+          user_id: sock.userId,
+          isOnline: true,
         };
       }
     });
-    console.log("Previous online users:", socket.userId);
     socket.emit(
       "previousOnlineUsers",
-      onlineUsers.filter((u) => u?.userId !== socket.userId)
+      onlineUsers.filter((u) => u?.user_id !== socket.userId)
     );
   });
 
   socket.on("disconnect", () => {
-    handleChannelChange(null);
+    handleUserGotOffline();
   });
 
-  socket.on("ChannelChanged", handleChannelChange);
-
-  socket.on("typing", ({ channelId, username, serverId }) => {
-    socket.to(serverId).emit("user_typing", { username, channelId });
+  socket.on("typing", ({ channelId, serverId }) => {
+    socket
+      .to(serverId)
+      .emit("user_typing", { username: socket.display_name, channelId });
   });
 
-  socket.on("stop_typing", ({ channelId, username, serverId }) => {
-    socket.to(serverId).emit("user_stop_typing", { username, channelId });
+  socket.on("stop_typing", ({ channelId, serverId }) => {
+    socket
+      .to(serverId)
+      .emit("user_stop_typing", { username: socket.display_name, channelId });
   });
 
   socket.on("listRooms", async (roomNames: string[]) => {
     const rooms = await videocall.listRooms();
-    console.log(rooms);
     const participantsPerRoom = await rooms
       ?.filter((r) => roomNames.includes(r.name))
       .map((r) => ({ name: r.name, participantsCount: r.numParticipants }));
@@ -188,10 +208,10 @@ io.on("connection", (socket) => {
   });
 
   socket.on("updateMessage", ({ messageId, content, serverId, streamId }) => {
-    socket
-      .to(serverId)
-      .emit("updateMessage", { messageId, content, streamId });
+    socket.to(serverId).emit("updateMessage", { messageId, content, streamId });
   });
+
+  socket.on("serverChange", handleUserGotOffline);
 
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);

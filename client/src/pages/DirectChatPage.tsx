@@ -6,7 +6,7 @@ import useSocket from "../socket/useSocket";
 import useUserStore from "../store/userStore";
 import MessageCard from "../components/MessageCard";
 import SendMessage from "../components/SendMessage";
-import OnlineUsers from "../components/OnlineUsers";
+import OnlineUsers from "../components/Members";
 import type { IConversation } from "../types/IConversation";
 import type { IDirectMessage } from "../types/IDirectMessage";
 

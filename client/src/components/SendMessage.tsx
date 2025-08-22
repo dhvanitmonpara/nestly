@@ -94,7 +94,7 @@ function SendMessage<T extends IChannel | IConversation>({
 
     if (!isTyping) {
       setIsTyping(true);
-      s.emit("typing", { channelId, username: user.display_name, serverId });
+      s.emit("typing", { channelId, serverId });
     }
 
     if (typingTimeout.current) clearTimeout(typingTimeout.current);
@@ -102,7 +102,6 @@ function SendMessage<T extends IChannel | IConversation>({
       setIsTyping(false);
       s.emit("stop_typing", {
         channelId,
-        username: user.display_name,
         serverId,
       });
     }, 2000); // 2 seconds after last keypress

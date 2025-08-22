@@ -23,6 +23,7 @@ import { FaMessage } from "react-icons/fa6";
 import Conversations from "../components/Conversations";
 import UpdateServerForm from "../components/UpdateServerForm";
 import type { IServer } from "../types/IServer";
+import Members from "../components/Members";
 
 function Layout() {
   const user = useUserStore((s) => s.user);
@@ -67,7 +68,7 @@ function Layout() {
         { withCredentials: true }
       );
 
-      const servers = res.data.servers
+      const servers = res.data.servers;
       const joinedServer = await fetchJoinedServerDetails(servers);
 
       setServers(joinedServer ? [...servers, joinedServer] : servers);
@@ -86,19 +87,6 @@ function Layout() {
 
     const s = socket.socket;
 
-    // const handleIncomingMessage = (message: IMessageWithUser) => {
-    //   if (serverId) return
-    //   setChannels((prev) => {
-    //     return {
-    //       ...prev,
-    //       messages: prev ? [
-    //         ...prev.messages,
-    //         message
-    //       ] : message
-    //     } as IChannelWithMessage
-    //   })
-    // }
-
     s.on("serverJoined", (serverId) => {
       console.log(`✅ Joined server: ${serverId}`);
     });
@@ -108,7 +96,6 @@ function Layout() {
     });
 
     s.on("notifyUserJoined", (room) => {
-      console.log(`User joined room: ${room}`);
       addRoomParticipant(room);
     });
 
@@ -118,11 +105,9 @@ function Layout() {
 
     const serverIds = servers.map((s) => s.id.toString());
     s.emit("joinServer", serverIds);
-    // s.on("message", handleIncomingMessage)
 
     return () => {
       if (socket.socket) {
-        // socket.socket.off("message", handleIncomingMessage)
         s.off("serverJoined");
         s.off("roomsList");
         s.off("notifyUserJoined");
@@ -160,7 +145,7 @@ function Layout() {
           <Separator className="bg-zinc-800 mt-1.5" />
           <CreateChannelForm />
         </section>
-        <div className="w-[250px] py-6 px-4 bg-zinc-800/50 relative">
+        <div className="min-w-[180px] md:min-w-[220px] py-6 px-4 bg-zinc-800/50 relative">
           <Link
             className="text-xl font-semibold flex justify-between items-center group"
             to={location.includes("/dm") ? "/dm" : `/s/${serverId}`}
@@ -192,6 +177,7 @@ function Layout() {
         <div className="w-full">
           <Outlet />
         </div>
+        <Members />
       </div>
       <Toaster />
     </div>

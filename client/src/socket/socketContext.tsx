@@ -30,7 +30,8 @@ const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       auth: {
         userId: user.id,
         username: user.username,
-        channel: ""
+        accent_color: user.accent_color,
+        display_name: user.display_name,
       },
     });
 

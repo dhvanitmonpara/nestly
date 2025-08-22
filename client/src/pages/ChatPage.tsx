@@ -8,7 +8,6 @@ import type { IMessage } from "../types/IMessage";
 import type { IChannel } from "../types/IChannel";
 import MessageCard from "../components/MessageCard";
 import SendMessage from "../components/SendMessage";
-import OnlineUsers from "../components/OnlineUsers";
 
 function ChatPage() {
   const [channel, setChannel] = useState<IChannel | null>(null);
@@ -99,9 +98,7 @@ function ChatPage() {
       messageId: string;
       content: string;
     }) => {
-      console.log("upp", channelId, data)
       if (channelId === data.streamId)
-        console.log("haha")
         setChannel((prev) => {
           if (!prev) return null;
           return {
@@ -115,14 +112,11 @@ function ChatPage() {
         });
     };
 
-    s.emit("userOnline", { channelId, serverId });
-
     s.on("message", handleMessage);
     s.on("updateMessage", handleUpdateMessage);
     s.on("deleteMessage", handleDeleteMessage);
 
     return () => {
-      s.emit("ChannelChanged", channelId);
       s.off("updateMessage", handleUpdateMessage);
       s.off("deleteMessage", handleDeleteMessage);
       s.off("message", handleMessage);
@@ -191,7 +185,6 @@ function ChatPage() {
           <div ref={messagesEndRef} />
         </div>
       </div>
-      <OnlineUsers channelName={channel?.name ?? null} />
     </div>
   );
 }

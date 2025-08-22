@@ -58,7 +58,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/s/:serverId",
-        element: <ShowWarning text="It seems like you haven't selected any channel yet, select one to continue." icon={<FaUserGroup />} />
+        element: <ShowWarning text="It seems like you haven't selected any server yet. Select one to continue." icon={<FaUserGroup />} />,
       },
       {
         path: "/s/:serverId/c/:channelId",
