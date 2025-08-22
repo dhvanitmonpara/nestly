@@ -6,6 +6,7 @@ import {
   Outlet,
   useLocation,
   useParams,
+  useSearchParams,
 } from "react-router-dom";
 import useUserStore from "../store/userStore";
 import ProfileButton from "../components/ProfileButton";
@@ -13,7 +14,7 @@ import env from "../conf/env";
 import CreateChannelForm from "../components/CreateServerForm";
 import useServerStore from "../store/serverStore";
 import useHandleAuthError from "../hooks/useHandleAuthError";
-import { Toaster } from "sonner";
+import { toast, Toaster } from "sonner";
 import useSocket from "../socket/useSocket";
 import ServerIcon from "../components/ServerIcon";
 import Channels from "../components/Channels";
@@ -21,6 +22,7 @@ import { Separator } from "../components/ui/separator";
 import { FaMessage } from "react-icons/fa6";
 import Conversations from "../components/Conversations";
 import UpdateServerForm from "../components/UpdateServerForm";
+import type { IServer } from "../types/IServer";
 
 function Layout() {
   const user = useUserStore((s) => s.user);
@@ -31,18 +33,44 @@ function Layout() {
   const removeRoomParticipant = useServerStore((s) => s.removeRoomParticipant);
   const socket = useSocket();
   const { serverId } = useParams();
+  const [searchParams] = useSearchParams();
+  const joinedServerId = searchParams.get("joinServer");
   const location = useLocation().pathname;
 
   const { handleAuthError } = useHandleAuthError();
 
+  const fetchJoinedServerDetails = async (servers: IServer[]) => {
+    if (!joinedServerId) return null;
+    if (servers.find((s) => s.id.toString() === joinedServerId)) return null;
+    try {
+      const res = await axios.get(
+        `${env.SERVER_ENDPOINT}/servers/id/${joinedServerId}`,
+        { withCredentials: true }
+      );
+
+      if (res.status !== 200) {
+        toast.error("Failed to get joined server");
+        return;
+      }
+
+      return res.data.server;
+    } catch (error) {
+      handleAuthError(error as AxiosError);
+    }
+  };
+
   const fetchServers = useCallback(async () => {
     try {
       if (!user) return;
-      const servers = await axios.get(
+      const res = await axios.get(
         `${env.SERVER_ENDPOINT}/servers/joined/${user.id}`,
         { withCredentials: true }
       );
-      setServers(servers.data.servers);
+
+      const servers = res.data.servers
+      const joinedServer = await fetchJoinedServerDetails(servers);
+
+      setServers(joinedServer ? [...servers, joinedServer] : servers);
     } catch (error) {
       handleAuthError(error as AxiosError);
     }

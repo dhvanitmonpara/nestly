@@ -95,7 +95,7 @@ function UpdateServerForm({
       <DialogContent className="bg-zinc-900 text-zinc-100 border-zinc-800 !max-w-96">
         <DialogHeader>
           <DialogTitle>
-            Edit Server: <span className="text-violet-500">{name}</span>
+            Edit Server: {name}
           </DialogTitle>
           <DialogDescription>
             It'll be changed for each member of this server.
