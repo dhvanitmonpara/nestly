@@ -187,6 +187,40 @@ export const getDirectConversationMessages = async (
   }
 };
 
+export const getConversationUser = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const conversation = await DirectConversation.findByPk(id, {
+      include: [
+        {
+          model: User,
+          as: "user1",
+          attributes: ["username", "id", "display_name", "accent_color"],
+        },
+        {
+          model: User,
+          as: "user2",
+          attributes: ["username", "id", "display_name", "accent_color"],
+        },
+      ],
+    });
+
+    if (!conversation) throw new ApiError(404, "Direct conversation not found");
+
+    return res.status(200).json({
+      message: "Direct conversation users fetched successfully",
+      users: [conversation.dataValues.user1, conversation.dataValues.user2],
+    });
+  } catch (error) {
+    handleError(
+      error,
+      res,
+      "Failed to get direct conversation users",
+      "GET_DIRECT_CONVERSATION_USERS"
+    );
+  }
+};
 
 export const deleteDirectMessage = async (req: Request, res: Response) => {
   try {

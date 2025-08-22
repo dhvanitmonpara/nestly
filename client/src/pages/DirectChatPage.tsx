@@ -6,7 +6,6 @@ import useSocket from "../socket/useSocket";
 import useUserStore from "../store/userStore";
 import MessageCard from "../components/MessageCard";
 import SendMessage from "../components/SendMessage";
-import OnlineUsers from "../components/Members";
 import type { IConversation } from "../types/IConversation";
 import type { IDirectMessage } from "../types/IDirectMessage";
 
@@ -211,13 +210,6 @@ function DirectChatPage() {
           <div ref={messagesEndRef} />
         </div>
       </div>
-      <OnlineUsers
-        channelName={
-          (conversation?.user_id1 === user?.id
-            ? conversation?.user2?.display_name
-            : conversation?.user1?.display_name) ?? null
-        }
-      />
     </div>
   );
 }

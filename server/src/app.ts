@@ -83,12 +83,17 @@ io.on("connection", (socket) => {
     socket.to(msg.user2).emit("directMessage", msg);
   });
 
-  socket.on("userOnlineDM", ({ userId, conversationId }) => {
+  socket.on("userOnlineDM", ({ conversationId }) => {
     socket.join(conversationId);
     socket.to(conversationId).emit("userGotOnlineDM", {
-      userId,
-      conversationId,
-      username: socket.username,
+      server_id: conversationId,
+      user: {
+        accent_color: socket.accent_color,
+        display_name: socket.display_name,
+        username: socket.username,
+      },
+      user_id: socket.userId,
+      isOnline: true,
     });
     const onlineUsersSockets = io.sockets.adapter.rooms.get(conversationId);
     const onlineUsers = Array.from(onlineUsersSockets || []).map((socketId) => {
@@ -112,7 +117,7 @@ io.on("connection", (socket) => {
     );
   });
 
-  socket.on("userGotOnlineDM", ({ userId, conversationId }) => {
+  socket.on("userGotOnlineDM", ({ conversationId }) => {
     socket.to(conversationId).emit("userGotOnlineDM", {
       server_id: conversationId,
       user: {
@@ -125,13 +130,11 @@ io.on("connection", (socket) => {
     });
   });
 
-  socket.on("userGotOfflineDM", ({ userId, conversationId }) => {
-    socket
-      .to(conversationId)
-      .emit("userGotOfflineDM", {
-        user_id: userId,
-        conversation_id: conversationId,
-      });
+  socket.on("userGotOfflineDM", ({ conversationId }) => {
+    socket.to(conversationId).emit("userGotOfflineDM", {
+      user_id: socket.userId,
+      conversation_id: conversationId,
+    });
   });
 
   socket.on("userOnline", ({ serverId }) => {

@@ -8,18 +8,8 @@ import axios from "axios";
 import env from "../conf/env";
 import { toast } from "sonner";
 import { Skeleton } from "./ui/skeleton";
-
-type IncomingMemberType = {
-  user_id: number;
-  server_id: number;
-  user: {
-    username: string;
-    display_name: string;
-    accent_color: string;
-  };
-  isOnline?: boolean;
-  isOwner?: boolean;
-};
+import type { IUser } from "../types/IUser";
+import type { IncomingMemberType } from "../types/IMember";
 
 function Members() {
   const [members, setMembers] = useState<IncomingMemberType[]>([]);
@@ -39,41 +29,56 @@ function Members() {
       setLoading(true);
       setMembers([]);
       if (!socket.socket) return;
-      if (!serverId) return;
+      if (!serverId && !conversationId) return;
 
-      const res = await axios.get(
-        `${env.SERVER_ENDPOINT}/servers/members/${serverId}`,
-        { withCredentials: true }
-      );
+      const endpoint = serverId
+        ? `${env.SERVER_ENDPOINT}/servers/members/${serverId}`
+        : `${env.SERVER_ENDPOINT}/dms/messages/${conversationId}/users`;
+
+      const res = await axios.get(endpoint, { withCredentials: true });
 
       if (res.status !== 200 && res.status !== 300) {
         toast.error("Failed to fetch members");
         return;
       }
 
-      const users = res.data.members.map((u: IncomingMemberType) => {
-        if (u.user_id === user?.id) {
-          return { ...u, isOnline: true };
-        }
-        return u;
-      });
+      if (serverId) {
+        const users = res.data.members.map((u: IncomingMemberType) => {
+          if (u.user_id === user?.id) {
+            return { ...u, isOnline: true };
+          }
+          return u;
+        });
 
-      setMembers([
-        ...users,
-        {
-          ...res.data.owner,
-          isOwner: true,
-          isOnline: user?.id === res.data.owner.user_id,
-        },
-      ]);
-      socket.socket.emit("userOnline", { serverId });
+        setMembers([
+          ...users,
+          {
+            ...res.data.owner,
+            isOwner: true,
+            isOnline: user?.id === res.data.owner.user_id,
+          },
+        ]);
+        socket.socket.emit("userOnline", { serverId });
+      } else {
+        const oppositeUser: IncomingMemberType = {
+          user: res.data.users.find((u: IUser) => u.id !== user?.id),
+          server_id: Number(conversationId ?? "0"),
+          user_id: res.data.users.find((u: IUser) => u.id !== user?.id)?.id,
+          isOnline: false,
+          isOwner: false,
+        };
+        if (oppositeUser) {
+          setMembers([oppositeUser]);
+        }
+        socket.socket.emit("userOnlineDM", { conversationId });
+      }
     } catch (error) {
       handleAuthError(error as AxiosError);
     } finally {
       setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [serverId, socket.socket, user?.id]);
+  }, [serverId, socket.socket, user?.id, conversationId]);
 
   useEffect(() => {
     handleFetchMembers();
@@ -174,9 +179,13 @@ function Members() {
     <div className="h-full overflow-y-auto w-96 bg-zinc-800">
       <div className="p-4 font-semibold flex">
         <span className="text-zinc-300">Members</span>
-       {loading ? <Skeleton className="bg-zinc-700 rounded-xl w-10 ml-2 text-xs" /> : <span className="bg-zinc-900 rounded-xl w-10 ml-2 text-xs flex justify-center items-center">
-          {members.length}
-        </span>}
+        {loading ? (
+          <Skeleton className="bg-zinc-700 rounded-xl w-10 ml-2 text-xs" />
+        ) : (
+          <span className="bg-zinc-900 rounded-xl w-10 ml-2 text-xs flex justify-center items-center">
+            {members.length}
+          </span>
+        )}
       </div>
       {loading ? (
         <>
@@ -232,7 +241,7 @@ function MemberList({ members }: { members: IncomingMemberType[] }) {
       {/* Offline Members */}
       {offline.length > 0 && (
         <div className="mt-4">
-          <h3 className="text-sm font-bold text-gray-500 mb-1">
+          <h3 className="text-xs px-4 font-bold text-gray-500 mb-1">
             OFFLINE — {offline.length}
           </h3>
           {offline.map((user) => (

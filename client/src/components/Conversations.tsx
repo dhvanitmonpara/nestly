@@ -44,6 +44,7 @@ function Conversations() {
           toast.error("Failed to fetch DMs");
           return;
         }
+
         setConversations(res.data.conversations);
       } catch (error) {
         handleAuthError(error as AxiosError);
@@ -60,14 +61,18 @@ function Conversations() {
 
   return (
     <div className="space-y-1">
-      <CreateConversationButton setConversations={setConversations}/>
+      <CreateConversationButton setConversations={setConversations} />
       <Separator className="bg-zinc-800" />
       {conversations.length > 0 &&
         conversations.map((c) => (
           <Conversation
             key={c.id}
             id={c.id}
-            accent_color={c.user_id1 === user?.id ? c.user2.accent_color : c.user1.accent_color}
+            accent_color={
+              c.user_id1 === user?.id
+                ? c.user2.accent_color
+                : c.user1.accent_color
+            }
             name={
               c.user_id1 === user?.id
                 ? c.user2.display_name
@@ -80,7 +85,11 @@ function Conversations() {
   );
 }
 
-const CreateConversationButton = ({setConversations}:{setConversations: React.Dispatch<React.SetStateAction<IConversation[]>>}) => {
+const CreateConversationButton = ({
+  setConversations,
+}: {
+  setConversations: React.Dispatch<React.SetStateAction<IConversation[]>>;
+}) => {
   const [open, setOpen] = useState(false);
   const { handleAuthError } = useHandleAuthError();
   const user = useUserStore((s) => s.user);
@@ -104,7 +113,7 @@ const CreateConversationButton = ({setConversations}:{setConversations: React.Di
       toast.success(
         `Successfully created a conversation with ${u.display_name}`
       );
-      setConversations(prev => [...prev, res.data.conversation]);
+      setConversations((prev) => [...prev, res.data.conversation]);
       navigate(`/dm/${res.data.conversation.id}`);
       setOpen(false);
     } catch (error) {
@@ -146,7 +155,6 @@ const SearchUserForm = ({
   const [results, setResults] = useState<IUser[]>([]);
 
   const { handleAuthError } = useHandleAuthError();
-
   const debouncedQuery = useDebounce(query, 500);
 
   useEffect(() => {
@@ -196,7 +204,10 @@ const SearchUserForm = ({
               onClick={() => handleSubmit(r)}
               className="hover:bg-zinc-800/40 transition-colors px-2 py-1.5 rounded-md w-full text-left space-x-2 flex justify-start items-center text-zinc-300 hover:text-zinc-100"
             >
-              <div className="text-sm font-medium h-10 w-10 flex justify-center items-center rounded-full bg-zinc-800 border border-zinc-900" style={{color: `#${r.accent_color}`}}>
+              <div
+                className="text-sm font-medium h-10 w-10 flex justify-center items-center rounded-full bg-zinc-800 border border-zinc-900"
+                style={{ color: `#${r.accent_color}` }}
+              >
                 {r.username.slice(0, 2)}
               </div>
               <div>
