@@ -52,12 +52,14 @@ function SendMessage<T extends IChannel | IConversation>({
         content: message,
         conversation_id: conversationId,
         sender_id: user.id,
+        createdAt: new Date().toISOString(),
       };
     } else if (channelId) {
       newMessage = {
         id: Date.now().toString(),
         content: message,
         channel_id: channelId,
+        createdAt: new Date().toISOString(),
         user: {
           id: user.id,
           accent_color: user.accent_color,

@@ -66,6 +66,7 @@ function DirectChatPage() {
         content: data.content,
         conversation_id: conversationId,
         sender_id: data.sender_id,
+        createdAt: data.createdAt
       };
 
       setConversation((prev) => {
@@ -78,13 +79,49 @@ function DirectChatPage() {
       });
     };
 
+    const handleUpdateMessage = (data: {
+      streamId: string;
+      messageId: string;
+      content: string;
+    }) => {
+      if (conversationId === data.streamId)
+        setConversation((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            messages: prev.messages
+              ? prev.messages.map((m) =>
+                  m.id === data.messageId ? { ...m, content: data.content } : m
+                )
+              : [],
+          } as IConversation;
+        });
+    };
+
+    const handleDeleteMessage = (data: {
+      streamId: string;
+      messageId: string;
+    }) => {
+      if (conversationId === data.streamId)
+        setConversation((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            messages: prev.messages
+              ? prev.messages.filter((m) => m.id !== data.messageId)
+              : [],
+          } as IConversation;
+        });
+    };
+
     s.emit("userOnlineDM", {
       userId: user.id,
       conversationId: conversationId.toString(),
     });
-    console.log("emmited");
 
     s.on("message", handleMessage);
+    s.on("updateMessage", handleUpdateMessage);
+    s.on("deleteMessage", handleDeleteMessage);
 
     return () => {
       s.emit("userGotOfflineDM", {
@@ -92,6 +129,8 @@ function DirectChatPage() {
         conversationId: conversationId.toString(),
       });
       s.off("message", handleMessage);
+      s.off("updateMessage", handleUpdateMessage);
+      s.off("deleteMessage", handleDeleteMessage);
     };
   }, [conversationId, socket.socket, user?.id]);
 
@@ -142,6 +181,7 @@ function DirectChatPage() {
                     return (
                       <MessageCard
                         key={chat.id}
+                        setChannel={setConversation}
                         continuesMessage={!isFirstFromUser}
                         id={chat.id}
                         accent_color={

@@ -66,6 +66,7 @@ function ChatPage() {
         id: Date.now().toString(),
         content: data.content,
         user: data.user,
+        createdAt: data.createdAt,
         channel_id: channelId,
       };
 
@@ -77,12 +78,53 @@ function ChatPage() {
       });
     };
 
+    const handleDeleteMessage = (data: {
+      streamId: string;
+      messageId: string;
+    }) => {
+      if (channelId === data.streamId)
+        setChannel((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            messages: prev.messages
+              ? prev.messages.filter((m) => m.id !== data.messageId)
+              : [],
+          } as IChannel;
+        });
+    };
+
+    const handleUpdateMessage = (data: {
+      streamId: string;
+      messageId: string;
+      content: string;
+    }) => {
+      console.log("upp", channelId, data)
+      if (channelId === data.streamId)
+        console.log("haha")
+        setChannel((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            messages: prev.messages
+              ? prev.messages.map((m) =>
+                  m.id === data.messageId ? { ...m, content: data.content } : m
+                )
+              : [],
+          } as IChannel;
+        });
+    };
+
     s.emit("userOnline", { channelId, serverId });
 
     s.on("message", handleMessage);
+    s.on("updateMessage", handleUpdateMessage);
+    s.on("deleteMessage", handleDeleteMessage);
 
     return () => {
       s.emit("ChannelChanged", channelId);
+      s.off("updateMessage", handleUpdateMessage);
+      s.off("deleteMessage", handleDeleteMessage);
       s.off("message", handleMessage);
     };
   }, [channelId, serverId, socket.socket, user?.id]);

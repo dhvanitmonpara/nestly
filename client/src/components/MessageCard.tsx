@@ -16,6 +16,9 @@ import env from "../conf/env";
 import type { IChannel } from "../types/IChannel";
 import type { IConversation } from "../types/IConversation";
 import { useState } from "react";
+import useSocket from "../socket/useSocket";
+import { useParams } from "react-router-dom";
+import useUserStore from "../store/userStore";
 
 type MessageCardProps<T> = {
   setChannel: React.Dispatch<React.SetStateAction<T | null>>;
@@ -37,6 +40,7 @@ function MessageCard<T extends IChannel | IConversation>({
   setChannel,
 }: MessageCardProps<T>) {
   const color = `#${accent_color}`;
+  const user = useUserStore((s) => s.user);
   return (
     <div
       className={`flex space-x-2 ${
@@ -71,13 +75,19 @@ function MessageCard<T extends IChannel | IConversation>({
               <span className="text-[0.70rem] text-zinc-500">
                 {createdAt ? formatTimestamp(createdAt) : ""}
               </span>
-              <MessageForm id={id} setChannel={setChannel} content={content} />
+              {user?.username === username && (
+                <MessageForm
+                  id={id}
+                  setChannel={setChannel}
+                  content={content}
+                />
+              )}
             </div>
           </div>
         )}
         <div className="text-zinc-200 text-sm flex justify-between">
           <span>{content}</span>
-          {continuesMessage && (
+          {continuesMessage && user?.username === username && (
             <MessageForm id={id} setChannel={setChannel} content={content} />
           )}
         </div>
@@ -97,15 +107,18 @@ function MessageForm<T extends IChannel | IConversation>({
 }) {
   const [value, setValue] = useState(content);
 
+  const socket = useSocket();
+  const { serverId, channelId, conversationId } = useParams();
   const { handleAuthError } = useHandleAuthError();
 
   const handleDeleteMessage = async () => {
     const toastId = toast.loading("Deleting message...");
     try {
-      const res = await axios.delete(
-        `${env.SERVER_ENDPOINT}/messages/delete/${id}`,
-        { withCredentials: true }
-      );
+      if (!socket.socket) return;
+      const url = conversationId
+        ? `${env.SERVER_ENDPOINT}/dms/messages/${id}`
+        : `${env.SERVER_ENDPOINT}/messages/delete/${id}`;
+      const res = await axios.delete(url, { withCredentials: true });
 
       if (res.status !== 200) {
         toast.error("Failed to delete message");
@@ -122,6 +135,11 @@ function MessageForm<T extends IChannel | IConversation>({
             : [],
         } as T;
       });
+      socket.socket.emit("deleteMessage", {
+        messageId: id,
+        serverId: conversationId ?? serverId,
+        streamId: conversationId ?? channelId,
+      });
     } catch (error) {
       handleAuthError(error as AxiosError);
     } finally {
@@ -131,10 +149,14 @@ function MessageForm<T extends IChannel | IConversation>({
 
   const handleUpdateMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!socket.socket) return;
     const toastId = toast.loading("Updating message...");
     try {
+      const url = conversationId
+        ? `${env.SERVER_ENDPOINT}/dms/messages/${id}`
+        : `${env.SERVER_ENDPOINT}/messages/update/${id}`;
       const res = await axios.put(
-        `${env.SERVER_ENDPOINT}/messages/update/${id}`,
+        url,
         { content: value },
         { withCredentials: true }
       );
@@ -155,6 +177,12 @@ function MessageForm<T extends IChannel | IConversation>({
               )
             : [],
         } as T;
+      });
+      socket.socket.emit("updateMessage", {
+        messageId: id,
+        serverId: conversationId ?? serverId,
+        content: value,
+        streamId: conversationId ?? channelId,
       });
     } catch (error) {
       handleAuthError(error as AxiosError);

@@ -84,9 +84,11 @@ io.on("connection", (socket) => {
 
   socket.on("userOnlineDM", ({ userId, conversationId }) => {
     socket.join(conversationId);
-    socket
-      .to(conversationId)
-      .emit("userGotOnlineDM", { userId, conversationId, username: socket.username });
+    socket.to(conversationId).emit("userGotOnlineDM", {
+      userId,
+      conversationId,
+      username: socket.username,
+    });
     const onlineUsersSockets = io.sockets.adapter.rooms.get(conversationId);
     const onlineUsers = Array.from(onlineUsersSockets || []).map((socketId) => {
       const sock = io.sockets.sockets.get(socketId); // socket instance
@@ -106,13 +108,11 @@ io.on("connection", (socket) => {
   });
 
   socket.on("userGotOnlineDM", ({ userId, conversationId }) => {
-    socket
-      .to(conversationId)
-      .emit("userGotOnlineDM", {
-        userId,
-        conversationId,
-        username: socket.username,
-      });
+    socket.to(conversationId).emit("userGotOnlineDM", {
+      userId,
+      conversationId,
+      username: socket.username,
+    });
   });
 
   socket.on("userGotOfflineDM", ({ userId, conversationId }) => {
@@ -181,6 +181,16 @@ io.on("connection", (socket) => {
 
   socket.on("deleteRoom", (roomName) => {
     videocall.deleteRoom(roomName);
+  });
+
+  socket.on("deleteMessage", ({ messageId, serverId, streamId }) => {
+    socket.to(serverId).emit("deleteMessage", { messageId, streamId });
+  });
+
+  socket.on("updateMessage", ({ messageId, content, serverId, streamId }) => {
+    socket
+      .to(serverId)
+      .emit("updateMessage", { messageId, content, streamId });
   });
 
   socket.on("disconnect", () => {

@@ -186,3 +186,47 @@ export const getDirectConversationMessages = async (
     );
   }
 };
+
+
+export const deleteDirectMessage = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) throw new ApiError(400, "Message Id is required");
+
+    const message = await DirectMessage.findByPk(id);
+
+    if (!message) throw new ApiError(404, "Message not found");
+
+    await DirectMessage.destroy({ where: { id } });
+
+    return res.status(200).json({
+      message: "Message deleted successfully",
+    });
+  } catch (error) {
+    handleError(error, res, "Failed to delete message", "MESSAGE_DELETION");
+  }
+};
+
+export const updateDirectMessage = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { content } = req.body;
+
+    if (!id) throw new ApiError(400, "Message Id is required");
+    if (!content) throw new ApiError(400, "Content is required");
+
+    const message = await DirectMessage.findByPk(id);
+
+    if (!message) throw new ApiError(404, "Message not found");
+
+    await DirectMessage.update({ content }, { where: { id }, returning: true });
+
+    return res.status(200).json({
+      message: "Message updated successfully",
+      messageObject: { ...message.dataValues, content },
+    });
+  } catch (error) {
+    handleError(error, res, "Failed to update message", "MESSAGE_UPDATE");
+  }
+};
