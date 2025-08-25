@@ -51,7 +51,7 @@ function MessageCard<T extends IChannel | IConversation>({
       key={id}
     >
       {continuesMessage ? (
-        <div className="w-8 text-[0.60rem] flex justify-center items-center opacity-0 group-hover:opacity-100 text-gray-400 line-clamp-1">
+        <div className="w-8 text-[0.60rem] pt-0.5 flex justify-center items-center opacity-0 group-hover:opacity-100 text-gray-400 line-clamp-1">
           {createdAt ? formatTimestamp(createdAt) : ""}
         </div>
       ) : (

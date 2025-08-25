@@ -88,13 +88,13 @@ function SendMessage<T extends IChannel | IConversation>({
   const handleTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMessage(e.target.value);
 
-    if (!socket.socket || !user || !channelId) return;
+    if (!socket.socket || !user || (!channelId && !conversationId)) return;
 
     const s = socket.socket;
 
     if (!isTyping) {
       setIsTyping(true);
-      s.emit("typing", { channelId, serverId });
+      s.emit("typing", { channelId, serverId: serverId ?? conversationId });
     }
 
     if (typingTimeout.current) clearTimeout(typingTimeout.current);
@@ -102,7 +102,7 @@ function SendMessage<T extends IChannel | IConversation>({
       setIsTyping(false);
       s.emit("stop_typing", {
         channelId,
-        serverId,
+        serverId: serverId ?? conversationId,
       });
     }, 2000); // 2 seconds after last keypress
   };
@@ -112,7 +112,7 @@ function SendMessage<T extends IChannel | IConversation>({
     const s = socket.socket;
 
     const handleUserTyping = (username: string, channel_id: string) => {
-      if (channel_id === channelId) {
+      if (channel_id === channelId || conversationId) {
         setTypingUsers((prev) =>
           prev.includes(username) ? prev : [...prev, username]
         );
@@ -120,7 +120,7 @@ function SendMessage<T extends IChannel | IConversation>({
     };
 
     const handleUserStopTyping = (username: string, channel_id: string) => {
-      if (channel_id === channelId) {
+      if (channel_id === channelId || conversationId) {
         setTypingUsers((prev) => prev.filter((id) => id !== username));
       }
     };
@@ -137,7 +137,7 @@ function SendMessage<T extends IChannel | IConversation>({
       s.off("user_typing");
       s.off("user_stop_typing");
     };
-  }, [channelId, socket.socket]);
+  }, [channelId, conversationId, socket.socket]);
 
   return (
     <div className="absolute bottom-0 left-4 w-[calc(100%-30px)] px-1 overflow-hidden">
