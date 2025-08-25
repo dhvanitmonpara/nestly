@@ -15,6 +15,7 @@ import { IoMdClose } from "react-icons/io";
 import { FaUsers } from "react-icons/fa";
 import { useState } from "react";
 import Members from "./Members";
+import Overlay from "./Overlay";
 
 function Sidebar({ className }: { className?: string }) {
   const servers = useServerStore((s) => s.servers);
@@ -110,9 +111,10 @@ const MembersSidebar = () => {
       >
         <FaUsers />
       </button>
+      {open && <Overlay closeHandler={() => setOpen(false)} />}
       <Members
         closeHandler={() => setOpen(false)}
-        className={`fixed h-full w-full md:hidden xs:w-72 top-0 left-0 z-40 transition-all duration-300 ${
+        className={`fixed h-full w-full md:hidden xs:w-60 top-0 left-0 z-50 shadow-2xl transition-all duration-300 ${
           open ? "" : "-translate-x-full"
         }`}
       />

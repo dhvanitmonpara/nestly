@@ -12,6 +12,7 @@ import Members from "../components/Members";
 import Sidebar from "../components/Sidebar";
 import { IoMenu } from "react-icons/io5";
 import useFeatureStore from "../store/featureStore";
+import Overlay from "../components/Overlay";
 
 function Layout() {
   const user = useUserStore((s) => s.user);
@@ -119,7 +120,6 @@ function Layout() {
   );
 }
 
-
 const Menu = () => {
   const open = useFeatureStore((s) => s.sidebarOpen);
   const setOpen = useFeatureStore((s) => s.setSidebarOpen);
@@ -127,10 +127,11 @@ const Menu = () => {
     <>
       <button
         onClick={() => setOpen(!open)}
-        className="h-12 w-12 cursor-pointer sm:hidden z-50 fixed top-4 left-4 aspect-square flex justify-center items-center bg-zinc-800 rounded-md mr-2"
+        className="h-12 w-12 cursor-pointer sm:hidden z-50 fixed top-4 left-4 aspect-square flex justify-center items-center bg-zinc-800 hover:bg-zinc-700 transition-colors duration-300 rounded-md mr-2"
       >
         <IoMenu />
       </button>
+      {open && <Overlay closeHandler={() => setOpen(false)} />}
       <Sidebar
         className={`flex sm:hidden fixed top-0 left-0 z-50 transition-all duration-200 h-full w-full xs:w-fit bg-zinc-900 ${
           open ? "" : "-translate-x-full"
