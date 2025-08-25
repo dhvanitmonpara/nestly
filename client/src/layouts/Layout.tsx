@@ -133,7 +133,7 @@ const Menu = () => {
       </button>
       {open && <Overlay closeHandler={() => setOpen(false)} />}
       <Sidebar
-        className={`flex sm:hidden fixed top-0 left-0 z-50 transition-all duration-200 h-full w-full xs:w-fit bg-zinc-900 ${
+        className={`flex sm:hidden fixed top-0 left-0 z-50 transition-all duration-300 h-full w-full xs:w-fit bg-zinc-900 ${
           open ? "" : "-translate-x-full"
         }`}
       />

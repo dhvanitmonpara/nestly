@@ -56,7 +56,7 @@ function Sidebar({ className }: { className?: string }) {
           className="text-xl font-semibold flex justify-between items-center"
           to={location.includes("/dm") ? "/dm" : `/s/${serverId}`}
         >
-          <span className="inline-block">
+          <span className="inline-block truncate">
             {servers.find((s) => s.id.toString() === serverId)?.name ||
               (location.includes("/dm") ? "Direct Messages" : "TechyScord")}
           </span>

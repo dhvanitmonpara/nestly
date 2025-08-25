@@ -6,7 +6,7 @@ function Overlay({ closeHandler }: { closeHandler: () => void }) {
         e.preventDefault()
         closeHandler();
       }}
-      className="fixed top-0 left-0 w-full h-full bg-zinc-950/60 z-30"
+      className="fixed md:hidden top-0 left-0 w-full h-full bg-zinc-950/60 z-30"
     ></div>
   );
 }

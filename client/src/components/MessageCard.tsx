@@ -45,7 +45,7 @@ function MessageCard<T extends IChannel | IConversation>({
     <div
       className={`flex space-x-2 ${
         continuesMessage ? "py-0.5" : "pt-2 mt-2 border-t border-zinc-800"
-      } mx-6 group`}
+      } sm:mx-6 group`}
       key={id}
     >
       {continuesMessage ? (

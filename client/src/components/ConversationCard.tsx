@@ -14,6 +14,7 @@ import env from "../conf/env";
 import { toast } from "sonner";
 import { useState } from "react";
 import type { IConversation } from "../types/IConversation";
+import useFeatureStore from "../store/featureStore";
 
 function DirectConversationCard({
   id,
@@ -31,6 +32,7 @@ function DirectConversationCard({
   const { handleAuthError } = useHandleAuthError();
   const navigate = useNavigate();
 
+  const setSidebarOpen = useFeatureStore((s) => s.setSidebarOpen);
   const { conversationId } = useParams();
 
   const handleDeleteServer = async () => {
@@ -60,6 +62,10 @@ function DirectConversationCard({
     <Link
       to={`/dm/${id}`}
       key={id}
+      onClick={(e) => {
+        e.stopPropagation();
+        setSidebarOpen(false);
+      }}
       className={`flex items-center justify-between group px-3 hover:bg-zinc-700/50 ${
         id.toString() === conversationId && "bg-zinc-700/50"
       } cursor-pointer rounded-md`}
@@ -68,7 +74,10 @@ function DirectConversationCard({
         key={id}
         className="py-2 flex justify-start space-x-2 w-full items-center text-zinc-300"
       >
-        <div style={{color:`#${accent_color}`}} className="font-semibold bg-zinc-900 rounded-full w-7 h-7 text-xs flex items-center justify-center">
+        <div
+          style={{ color: `#${accent_color}` }}
+          className="font-semibold bg-zinc-900 rounded-full w-7 h-7 text-xs flex items-center justify-center"
+        >
           {name.slice(0, 2)}
         </div>
         <div className="text-sm font-semibold">{name}</div>

@@ -143,7 +143,7 @@ function ChatPage() {
               <h2>Loading...</h2>
             ) : (
               <div className="px-4 pt-10 pb-60">
-                <div className="px-6 pb-4 text-lg font-semibold text-zinc-200">
+                <div className="sm:px-6 pb-4 text-lg font-semibold text-zinc-200">
                   <h3>Welcome to {channel?.name}</h3>
                 </div>
                 {channel?.messages && channel.messages.length > 0 ? (

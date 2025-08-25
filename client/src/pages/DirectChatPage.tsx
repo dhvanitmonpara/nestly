@@ -144,7 +144,7 @@ function DirectChatPage() {
       <div className="relative w-full">
         <div className="h-full overflow-y-auto w-full no-scrollbar">
           <div className="h-full">
-            <div className="sticky top-0 bg-zinc-900 px-4 pt-4">
+            <div className="sticky top-0 bg-zinc-900 pl-[4.5rem] sm:pl-4 px-4 pt-4">
               <h1 className="w-full h-12 bg-zinc-800 px-4 rounded-md flex justify-start items-center">
                 {conversation?.user_id1 === user?.id
                   ? conversation?.user2?.display_name
@@ -155,7 +155,7 @@ function DirectChatPage() {
               <h2>Loading...</h2>
             ) : (
               <div className="px-4 pt-10 pb-60">
-                <div className="px-6 pb-4 text-lg font-semibold text-zinc-200">
+                <div className="sm:px-6 pb-4 text-lg font-semibold text-zinc-200">
                   <h3>
                     This is the beginning of an incredible conversation with{" "}
                     {conversation?.user_id1 === user?.id
