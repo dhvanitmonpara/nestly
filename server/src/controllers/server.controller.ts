@@ -314,3 +314,33 @@ export const getMembersByServer = async (req: Request, res: Response) => {
     );
   }
 };
+
+export const kickMember = async (req: Request, res: Response) => {
+  try {
+    const { userId, serverId } = req.params;
+
+    if (!userId || !serverId) throw new ApiError(400, "User ID and Server ID are required");
+
+    const member = await Member.findOne({
+      where: {
+        user_id: userId,
+        server_id: serverId,
+      },
+    });
+
+    if (!member) throw new ApiError(404, "Member not found");
+
+    await member.destroy();
+
+    return res.status(200).json({
+      message: "User left the server successfully",
+    });
+  } catch (error) {
+    handleError(
+      error as ApiError,
+      res,
+      "Failed to leave server",
+      "LEAVE_SERVER"
+    );
+  }
+}

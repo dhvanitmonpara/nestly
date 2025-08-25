@@ -186,6 +186,10 @@ io.on("connection", (socket) => {
       .emit("user_stop_typing", { username: socket.display_name, channelId });
   });
 
+  socket.on("userKicked", ({ userId, serverId }) => {
+    socket.to(serverId).emit("userKicked", { userId });
+  });
+
   socket.on("listRooms", async (roomNames: string[]) => {
     const rooms = await videocall.listRooms();
     const participantsPerRoom = await rooms

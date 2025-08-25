@@ -11,9 +11,9 @@ interface UserState {
 const useUserStore = create<UserState>((set) => ({
     user: null,
     setUser: (user) => set({ user }),
-    updateUser: (updateduser) =>
+    updateUser: (updatedUser) =>
         set((state) => ({
-            user: { ...state.user, ...updateduser },
+            user: { ...state.user, ...updatedUser },
         })),
     removeUser: () =>
         set({

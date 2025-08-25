@@ -76,7 +76,7 @@ function Layout() {
       handleAuthError(error as AxiosError);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setServers, user]);
+  }, [setServers, user, joinedServerId]);
 
   useEffect(() => {
     fetchServers();

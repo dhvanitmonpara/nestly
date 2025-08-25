@@ -56,7 +56,7 @@ export const deleteChannel = async (req: Request, res: Response) => {
             throw new ApiError(404, "Channel not found");
         }
 
-        const messages = await Message.destroy({
+        await Message.destroy({
             where: {
                 channel_id: id
             }

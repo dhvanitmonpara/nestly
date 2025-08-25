@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import useSocket from "../socket/useSocket";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import useUserStore from "../store/userStore";
 import useHandleAuthError from "../hooks/useHandleAuthError";
 import type { AxiosError } from "axios";
@@ -10,13 +10,22 @@ import { toast } from "sonner";
 import { Skeleton } from "./ui/skeleton";
 import type { IUser } from "../types/IUser";
 import type { IncomingMemberType } from "../types/IMember";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { HiDotsHorizontal } from "react-icons/hi";
+import { IoMdExit } from "react-icons/io";
 
 function Members() {
   const [members, setMembers] = useState<IncomingMemberType[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const socket = useSocket();
+  const { socket } = useSocket();
   const user = useUserStore((s) => s.user);
+  const navigate = useNavigate();
   const { serverId, conversationId } = useParams<{
     serverId: string;
     conversationId: string;
@@ -28,7 +37,7 @@ function Members() {
     try {
       setLoading(true);
       setMembers([]);
-      if (!socket.socket) return;
+      if (!socket) return;
       if (!serverId && !conversationId) return;
 
       const endpoint = serverId
@@ -58,7 +67,7 @@ function Members() {
             isOnline: user?.id === res.data.owner.user_id,
           },
         ]);
-        socket.socket.emit("userOnline", { serverId });
+        socket.emit("userOnline", { serverId });
       } else {
         const oppositeUser: IncomingMemberType = {
           user: res.data.users.find((u: IUser) => u.id !== user?.id),
@@ -70,7 +79,7 @@ function Members() {
         if (oppositeUser) {
           setMembers([oppositeUser]);
         }
-        socket.socket.emit("userOnlineDM", { conversationId });
+        socket.emit("userOnlineDM", { conversationId });
       }
     } catch (error) {
       handleAuthError(error as AxiosError);
@@ -78,18 +87,16 @@ function Members() {
       setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [serverId, socket.socket, user?.id, conversationId]);
+  }, [serverId, socket, user?.id, conversationId]);
 
   useEffect(() => {
     handleFetchMembers();
   }, [handleFetchMembers]);
 
   useEffect(() => {
-    if (!socket.socket || (!serverId && !conversationId)) return;
+    if (!socket || (!serverId && !conversationId)) return;
 
-    const s = socket.socket;
-
-    s.on("previousOnlineUsers", (data: IncomingMemberType[]) => {
+    socket.on("previousOnlineUsers", (data: IncomingMemberType[]) => {
       setMembers((prev) =>
         prev.map((user) => {
           const found = data.find((u) => u.user_id === user.user_id);
@@ -98,7 +105,7 @@ function Members() {
       );
     });
 
-    s.on("userGotOffline", (data) => {
+    socket.on("userGotOffline", (data) => {
       setMembers((prev) =>
         prev.map((user) => {
           if (user.user_id === data.userId) {
@@ -112,7 +119,7 @@ function Members() {
       );
     });
 
-    s.on("userGotOnline", (data: IncomingMemberType) => {
+    socket.on("userGotOnline", (data: IncomingMemberType) => {
       if (
         data.server_id.toString() === serverId ||
         data.server_id.toString() === conversationId
@@ -132,7 +139,7 @@ function Members() {
       }
     });
 
-    s.on("userGotOfflineDM", (data: IncomingMemberType) => {
+    socket.on("userGotOfflineDM", (data: IncomingMemberType) => {
       setMembers((prev) =>
         prev.map((user) => {
           if (user.user_id !== data.user_id) {
@@ -147,7 +154,7 @@ function Members() {
       );
     });
 
-    s.on("userGotOnlineDM", (data: IncomingMemberType) => {
+    socket.on("userGotOnlineDM", (data: IncomingMemberType) => {
       if (data.user_id === user?.id) return; // Ignore own online status
       if (data.server_id.toString() === conversationId) {
         setMembers((prev) =>
@@ -164,23 +171,29 @@ function Members() {
       }
     });
 
-    return () => {
-      s.off("previousOnlineUsers");
-      s.off("userGotOnlineDM");
-      s.off("userGotOfflineDM");
-      s.off("userGotOnline");
-      s.off("userGotOffline");
-    };
-  }, [conversationId, serverId, socket.socket, user?.id]);
+    socket.on("userKicked", (data) => {
+      setMembers((prev) => prev.filter((user) => user.user_id !== data.userId));
+      if (data.userId === user?.id) navigate("/");
+    });
 
-  if (!socket.socket || (!serverId && !conversationId)) return;
+    return () => {
+      socket.off("previousOnlineUsers");
+      socket.off("userGotOnlineDM");
+      socket.off("userGotOfflineDM");
+      socket.off("userGotOnline");
+      socket.off("userGotOffline");
+      socket.off("userKicked");
+    };
+  }, [conversationId, navigate, serverId, socket, user?.id]);
+
+  if (!socket || (!serverId && !conversationId)) return;
 
   return (
     <div className="h-full overflow-y-auto w-96 bg-zinc-800">
       <div className="p-4 font-semibold flex">
         <span className="text-zinc-300">Members</span>
         {loading ? (
-          <Skeleton className="bg-zinc-700 rounded-xl w-10 ml-2 text-xs" />
+          <Skeleton className="bg-zinc-700 rounded-xl w-10 ml-2 tex`t-xs" />
         ) : (
           <span className="bg-zinc-900 rounded-xl w-10 ml-2 text-xs flex justify-center items-center">
             {members.length}
@@ -196,7 +209,7 @@ function Members() {
           <UserCardSkeleton key={2} />
         </>
       ) : members.length > 0 ? (
-        <MemberList members={members} />
+        <MemberList setMembers={setMembers} members={members} />
       ) : (
         <div className="h-40 flex justify-center items-center text-zinc-400 text-sm">
           No users online
@@ -206,11 +219,21 @@ function Members() {
   );
 }
 
-function MemberList({ members }: { members: IncomingMemberType[] }) {
+function MemberList({
+  members,
+  setMembers,
+}: {
+  members: IncomingMemberType[];
+  setMembers: React.Dispatch<React.SetStateAction<IncomingMemberType[]>>;
+}) {
   // Split into groups
   const owners = members.filter((m) => m.isOwner);
   const online = members.filter((m) => !m.isOwner && m.isOnline);
   const offline = members.filter((m) => !m.isOwner && !m.isOnline);
+
+  const user = useUserStore((s) => s.user);
+  const isOwner =
+    user?.id !== undefined && owners.some((o) => o.user_id === user.id);
 
   return (
     <div>
@@ -221,7 +244,12 @@ function MemberList({ members }: { members: IncomingMemberType[] }) {
             OWNER — {owners.length}
           </h3>
           {owners.map((user) => (
-            <UserCard key={user.user_id} user={user} />
+            <UserCard
+              setMembers={setMembers}
+              isOwner={false}
+              key={user.user_id}
+              user={user}
+            />
           ))}
         </div>
       )}
@@ -233,7 +261,12 @@ function MemberList({ members }: { members: IncomingMemberType[] }) {
             ONLINE — {online.length}
           </h3>
           {online.map((user) => (
-            <UserCard key={user.user_id} user={user} />
+            <UserCard
+              setMembers={setMembers}
+              isOwner={isOwner}
+              key={user.user_id}
+              user={user}
+            />
           ))}
         </div>
       )}
@@ -245,7 +278,12 @@ function MemberList({ members }: { members: IncomingMemberType[] }) {
             OFFLINE — {offline.length}
           </h3>
           {offline.map((user) => (
-            <UserCard key={user.user_id} user={user} />
+            <UserCard
+              setMembers={setMembers}
+              isOwner={isOwner}
+              key={user.user_id}
+              user={user}
+            />
           ))}
         </div>
       )}
@@ -267,19 +305,72 @@ export function UserCardSkeleton() {
   );
 }
 
-const UserCard = ({ user }: { user: IncomingMemberType }) => {
+const UserCard = ({
+  user,
+  isOwner,
+  setMembers,
+}: {
+  user: IncomingMemberType;
+  isOwner: boolean;
+  setMembers: React.Dispatch<React.SetStateAction<IncomingMemberType[]>>;
+}) => {
+  const { serverId } = useParams();
+  const { socket } = useSocket();
+
+  const handleKickUser = async () => {
+    if (!user || !isOwner || !socket) return;
+    try {
+      if (!serverId) return;
+      const res = await axios.delete(
+        `${env.SERVER_ENDPOINT}/servers/${serverId}/members/${user.user_id}/kick`,
+        { withCredentials: true }
+      );
+      if (res.status !== 200) {
+        toast.error(`Failed to kick ${user.user.username}`);
+        return;
+      }
+
+      socket.emit("userKicked", { userId: user.user_id, serverId });
+
+      toast.success(`Successfully kicked ${user.user.username}`);
+      setMembers((prev) => prev.filter((m) => m.user_id !== user.user_id));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div
       key={user.user_id}
-      className="px-4 py-2 border-b flex justify-start space-x-2 border-zinc-700"
+      className="px-4 py-2 group border-b flex justify-start space-x-2 border-zinc-700"
     >
-      <div className="relative font-semibold bg-zinc-900 rounded-full w-8 h-8 flex items-center justify-center">
+      <div className="relative aspect-square font-semibold bg-zinc-900 rounded-full w-8 h-8 flex items-center justify-center">
         {user.user.username?.slice(0, 2)}
         {user.isOnline && (
           <span className="absolute bottom-0 right-0 h-2 w-2 bg-green-500 rounded-full"></span>
         )}
       </div>
-      <div>{user.user.username}</div>
+      <div className="w-full">{user.user.username}</div>
+      {isOwner && (
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            onClick={(e) => e.stopPropagation()}
+            className="hover:bg-zinc-300 hover:text-zinc-900 opacity-0 group-hover:opacity-100 transition-colors px-2 py-1 my-1 rounded-full cursor-pointer"
+          >
+            <HiDotsHorizontal />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="bg-zinc-800 text-zinc-300 border-zinc-800">
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={handleKickUser}
+              className="text-zinc-100 flex justify-start items-center space-x-1"
+            >
+              <IoMdExit className="text-zinc-300" />
+              <span className="text-sm font-semibold text-zinc-300">Kick</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
     </div>
   );
 };
