@@ -60,9 +60,9 @@ function Sidebar({ className }: { className?: string }) {
             {servers.find((s) => s.id.toString() === serverId)?.name ||
               (location.includes("/dm") ? "Direct Messages" : "TechyScord")}
           </span>
-          <div className="space-x-2 flex">
+          <div className="flex">
             {serverId && (
-              <span className="inline-block">
+              <span className="inline-block ml-2">
                 <UpdateServerForm
                   id={Number(serverId)}
                   name={
@@ -79,7 +79,7 @@ function Sidebar({ className }: { className?: string }) {
                 e.preventDefault();
                 setSidebarOpen(false);
               }}
-              className="text-zinc-400 hover:text-zinc-300 sm:hidden cursor-pointer transition-opacity h-8 w-8 flex justify-center items-center rounded-full bg-zinc-700"
+              className="ml-2 text-zinc-400 hover:text-zinc-300 sm:hidden cursor-pointer transition-opacity h-8 w-8 flex justify-center items-center rounded-full bg-zinc-700"
             >
               <IoMdClose />
             </button>
@@ -107,7 +107,7 @@ const MembersSidebar = () => {
           e.preventDefault();
           setOpen(true);
         }}
-        className="text-zinc-400 hover:text-zinc-300 md:hidden sm:opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity h-8 w-8 flex justify-center items-center rounded-full bg-zinc-700"
+        className="text-zinc-400 hover:text-zinc-300 ml-2 md:hidden sm:opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity h-8 w-8 flex justify-center items-center rounded-full bg-zinc-700"
       >
         <FaUsers />
       </button>

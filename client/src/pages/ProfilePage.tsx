@@ -42,7 +42,7 @@ export default function ProfilePage() {
       const accent_color = customizeUser?.accent_color.slice(1, 7);
       const response = await axios.put(
         `${env.SERVER_ENDPOINT}/users/update`,
-        { accent_color },
+        { accent_color, display_name: customizeUser?.display_name },
         { withCredentials: true }
       );
       if (response.status !== 200) {

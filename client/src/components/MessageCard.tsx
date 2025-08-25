@@ -24,6 +24,7 @@ type MessageCardProps<T> = {
   setChannel: React.Dispatch<React.SetStateAction<T | null>>;
   id: string;
   username: string;
+  display_name: string
   accent_color: string;
   content: string;
   createdAt: string | null;
@@ -33,6 +34,7 @@ type MessageCardProps<T> = {
 function MessageCard<T extends IChannel | IConversation>({
   id,
   username,
+  display_name,
   accent_color,
   content,
   createdAt,
@@ -49,7 +51,7 @@ function MessageCard<T extends IChannel | IConversation>({
       key={id}
     >
       {continuesMessage ? (
-        <div className="w-8 text-[0.60rem] opacity-0 group-hover:opacity-100 text-gray-400 line-clamp-1">
+        <div className="w-8 text-[0.60rem] flex justify-center items-center opacity-0 group-hover:opacity-100 text-gray-400 line-clamp-1">
           {createdAt ? formatTimestamp(createdAt) : ""}
         </div>
       ) : (
@@ -69,7 +71,7 @@ function MessageCard<T extends IChannel | IConversation>({
                 color: color,
               }}
             >
-              {username || "Unknown"}
+              {display_name || username || "Unknown"}
             </span>
             <div className="space-x-3 flex items-center justify-between w-full">
               <span className="text-[0.70rem] text-zinc-500">

@@ -355,10 +355,10 @@ export const updateUser = async (req: Request, res: Response) => {
     const user = await User.findByPk(req.user.id);
     if (!user) throw new ApiError(404, "User not found");
 
-    const { accent_color } = req.body;
+    const { accent_color, display_name } = req.body;
 
     const updatedUser = await User.update(
-      { accent_color },
+      { accent_color, display_name },
       { where: { id: req.user.id } }
     );
 

@@ -168,8 +168,9 @@ function ChatPage() {
                         accent_color={chat.user?.accent_color}
                         content={chat.content}
                         createdAt={chat?.createdAt ?? null}
-                        username={chat.user?.display_name}
+                        username={chat.user?.username}
                         setChannel={setChannel}
+                        display_name={chat?.user.display_name}
                       />
                     );
                   })

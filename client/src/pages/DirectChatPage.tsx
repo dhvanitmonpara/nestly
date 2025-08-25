@@ -65,7 +65,7 @@ function DirectChatPage() {
         content: data.content,
         conversation_id: conversationId,
         sender_id: data.sender_id,
-        createdAt: data.createdAt
+        createdAt: data.createdAt,
       };
 
       setConversation((prev) => {
@@ -183,6 +183,11 @@ function DirectChatPage() {
                         setChannel={setConversation}
                         continuesMessage={!isFirstFromUser}
                         id={chat.id}
+                        display_name={
+                          chat.sender_id === conversation.user_id1
+                            ? conversation.user1.display_name
+                            : conversation.user2.display_name
+                        }
                         accent_color={
                           chat.sender_id === conversation.user_id1
                             ? conversation.user1.accent_color
@@ -192,8 +197,8 @@ function DirectChatPage() {
                         createdAt={chat?.createdAt ?? null}
                         username={
                           chat.sender_id === conversation.user_id1
-                            ? conversation.user1.display_name
-                            : conversation.user2.display_name
+                            ? conversation.user1.username
+                            : conversation.user2.username
                         }
                       />
                     );

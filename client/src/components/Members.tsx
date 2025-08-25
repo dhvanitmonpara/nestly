@@ -361,7 +361,7 @@ const UserCard = ({
   return (
     <div
       key={user.user_id}
-      className="px-4 py-2 group flex justify-start space-x-2"
+      className="px-4 py-2 group flex justify-start space-x-2.5"
     >
       <div className="relative aspect-square z-10 font-semibold bg-zinc-900 rounded-full w-8 h-8 flex items-center justify-center">
         {user.user.username?.slice(0, 2)}
@@ -369,7 +369,9 @@ const UserCard = ({
           <span className="absolute bottom-0 right-0 h-2 w-2 bg-green-500 rounded-full"></span>
         )}
       </div>
-      <div className="w-full text-base">{user.user.username}</div>
+      <div className="w-full h-8 flex items-center">
+        <p>{user.user.display_name}</p>
+      </div>
       {isOwner && (
         <DropdownMenu>
           <DropdownMenuTrigger
