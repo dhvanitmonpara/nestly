@@ -17,9 +17,16 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { HiDotsHorizontal } from "react-icons/hi";
-import { IoMdExit } from "react-icons/io";
+import { IoMdClose, IoMdExit } from "react-icons/io";
+import clsx from "clsx";
 
-function Members() {
+function Members({
+  className,
+  closeHandler,
+}: {
+  className?: string;
+  closeHandler?: () => void;
+}) {
   const [members, setMembers] = useState<IncomingMemberType[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -189,16 +196,28 @@ function Members() {
   if (!socket || (!serverId && !conversationId)) return;
 
   return (
-    <div className="h-full overflow-y-auto w-96 bg-zinc-800">
-      <div className="p-4 font-semibold flex">
-        <span className="text-zinc-300">Members</span>
-        {loading ? (
-          <Skeleton className="bg-zinc-700 rounded-xl w-10 ml-2 tex`t-xs" />
-        ) : (
-          <span className="bg-zinc-900 rounded-xl w-10 ml-2 text-xs flex justify-center items-center">
-            {members.length}
-          </span>
-        )}
+    <div className={clsx("h-full overflow-y-auto w-96 bg-zinc-800", className)}>
+      <div className="p-4 font-semibold flex justify-between">
+        <div className="flex">
+          <span className="text-zinc-300">Members</span>
+          {loading ? (
+            <Skeleton className="bg-zinc-700 rounded-xl w-10 ml-2 tex`t-xs" />
+          ) : (
+            <span className="bg-zinc-900 rounded-xl w-10 ml-2 text-xs flex justify-center items-center">
+              {members.length}
+            </span>
+          )}
+        </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            if (closeHandler) closeHandler();
+          }}
+          className={`transition-all duration-300 text-zinc-400 hover:text-zinc-300 md:hidden cursor-pointer h-8 w-8 flex justify-center items-center rounded-full bg-zinc-700`}
+        >
+          <IoMdClose />
+        </button>
       </div>
       {loading ? (
         <>
@@ -239,7 +258,7 @@ function MemberList({
     <div>
       {/* Owners */}
       {owners.length > 0 && (
-        <div>
+        <div className="border-b border-zinc-700">
           <h3 className="text-xs px-4 font-bold text-gray-500 mb-1">
             OWNER — {owners.length}
           </h3>
@@ -256,7 +275,7 @@ function MemberList({
 
       {/* Online Members */}
       {online.length > 0 && (
-        <div className="mt-4">
+        <div className="border-b border-zinc-700 mt-4">
           <h3 className="text-xs px-4 font-bold text-gray-500 mb-1">
             ONLINE — {online.length}
           </h3>
@@ -273,7 +292,7 @@ function MemberList({
 
       {/* Offline Members */}
       {offline.length > 0 && (
-        <div className="mt-4">
+        <div className="border-b border-zinc-700 mt-4">
           <h3 className="text-xs px-4 font-bold text-gray-500 mb-1">
             OFFLINE — {offline.length}
           </h3>
@@ -342,20 +361,20 @@ const UserCard = ({
   return (
     <div
       key={user.user_id}
-      className="px-4 py-2 group border-b flex justify-start space-x-2 border-zinc-700"
+      className="px-4 py-2 group flex justify-start space-x-2"
     >
-      <div className="relative aspect-square font-semibold bg-zinc-900 rounded-full w-8 h-8 flex items-center justify-center">
+      <div className="relative aspect-square z-10 font-semibold bg-zinc-900 rounded-full w-8 h-8 flex items-center justify-center">
         {user.user.username?.slice(0, 2)}
         {user.isOnline && (
           <span className="absolute bottom-0 right-0 h-2 w-2 bg-green-500 rounded-full"></span>
         )}
       </div>
-      <div className="w-full">{user.user.username}</div>
+      <div className="w-full text-base">{user.user.username}</div>
       {isOwner && (
         <DropdownMenu>
           <DropdownMenuTrigger
             onClick={(e) => e.stopPropagation()}
-            className="hover:bg-zinc-300 hover:text-zinc-900 opacity-0 group-hover:opacity-100 transition-colors px-2 py-1 my-1 rounded-full cursor-pointer"
+            className="hover:bg-zinc-300 hover:text-zinc-900 md:opacity-0 md:group-hover:opacity-100 transition-colors px-2 py-1 my-1 rounded-full cursor-pointer"
           >
             <HiDotsHorizontal />
           </DropdownMenuTrigger>

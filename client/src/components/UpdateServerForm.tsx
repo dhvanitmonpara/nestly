@@ -88,7 +88,7 @@ function UpdateServerForm({
       }}
     >
       {!setOpen && (
-        <DialogTrigger className="text-zinc-400 hover:text-zinc-200 transition-all opacity-0 group-hover:opacity-100">
+        <DialogTrigger className="text-zinc-400 hover:text-zinc-200 transition-all cursor-pointer bg-zinc-700 h-8 w-8 flex justify-center items-center rounded-full sm:opacity-0 sm:group-hover:opacity-100">
           <HiPencil />
         </DialogTrigger>
       )}

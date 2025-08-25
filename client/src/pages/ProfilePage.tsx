@@ -69,7 +69,10 @@ export default function ProfilePage() {
     <div className="pt-20 px-4">
       <h1 className="text-2xl font-bold mb-4">Profile</h1>
       <div className="mb-4 flex justify-start items-center space-x-2.5">
-        <div style={{color: `#${user.accent_color}`}} className="bg-zinc-800 rounded-full h-10 w-10 flex justify-center items-center">
+        <div
+          style={{ color: `#${user.accent_color}` }}
+          className="bg-zinc-800 rounded-full h-10 w-10 flex justify-center items-center"
+        >
           {user.display_name.slice(0, 1).toUpperCase()}
         </div>
         <div>
@@ -77,12 +80,37 @@ export default function ProfilePage() {
           <p className="text-sm text-gray-500">{user.email}</p>
         </div>
       </div>
-      <div className="text-sm text-gray-300">
-        <span>Accent Color: </span>
-        <ColorPicker
-          setUser={setCustomizeUser}
-          defaultColor={customizeUser.accent_color}
-        />
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <label
+            htmlFor="display_name"
+            className="block text-sm font-medium text-zinc-500"
+          >
+            Display Name
+          </label>
+          <input
+            type="text"
+            id="display_name"
+            className="border border-zinc-700 rounded-md p-2 bg-zinc-900 text-zinc-100"
+            value={customizeUser.display_name}
+            placeholder="Display Name"
+            onChange={(e) =>
+              setCustomizeUser({
+                ...customizeUser,
+                display_name: e.target.value,
+              })
+            }
+          />
+        </div>
+        <div className="space-y-2">
+          <span className="block text-sm font-medium text-zinc-500">
+            Accent Color:{" "}
+          </span>
+          <ColorPicker
+            setUser={setCustomizeUser}
+            defaultColor={customizeUser.accent_color}
+          />
+        </div>
       </div>
       {user !== customizeUser && (
         <div className="space-x-2 pt-6">

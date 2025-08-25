@@ -28,6 +28,12 @@ export const initializeUser = async (req: Request, res: Response) => {
     if (existingUser)
       throw new ApiError(400, "User with this email already exists");
 
+    const isUsernameUnique = !(await User.findOne({
+      where: { username: username },
+    }));
+
+    if (!isUsernameUnique) throw new ApiError(400, "Username is already taken");
+
     const user = {
       password,
       email: email.toLowerCase(),
@@ -42,20 +48,6 @@ export const initializeUser = async (req: Request, res: Response) => {
 
     if (!pendingUserCacheSuccess) {
       throw new ApiError(500, "Failed to set user in Redis");
-    }
-
-    const mailResponse = await sendMail(email, "OTP");
-    if (!mailResponse.success)
-      throw new ApiError(500, mailResponse.error || "Failed to send OTP");
-    if (!mailResponse.otpCode) throw new ApiError(500, "Failed to send OTP");
-
-    const hashedOTP = await hashOTP(mailResponse.otpCode);
-    if (!hashedOTP) throw new ApiError(500, "Failed to hash OTP");
-
-    const otpCacheSuccess = nodeCache.set(`otp:${email}`, hashedOTP, 65);
-
-    if (!otpCacheSuccess) {
-      throw new ApiError(500, "Failed to set OTP in Redis");
     }
 
     res.status(201).json({
@@ -335,9 +327,11 @@ export const sendOtp = async (req: Request, res: Response) => {
       throw new ApiError(500, mailResponse.error || "Failed to send OTP");
     if (!mailResponse.otpCode) throw new ApiError(500, "Failed to send OTP");
 
+    const hashedOTP = await hashOTP(mailResponse.otpCode)
+
     const cacheSuccess = nodeCache.set(
       `otp:${email}`,
-      mailResponse.otpCode,
+      hashedOTP,
       65
     );
 
@@ -387,7 +381,9 @@ const OtpVerifier = async (email: string, otp: string) => {
   try {
     const storedOtp = nodeCache.get(`otp:${email}`);
 
-    if (storedOtp === otp) {
+    const hashedOTP = await hashOTP(otp);
+
+    if (storedOtp === hashedOTP) {
       nodeCache.del(`otp:${email}`);
       return true;
     } else {

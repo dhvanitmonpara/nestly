@@ -1,29 +1,17 @@
 import axios, { AxiosError } from "axios";
 import { useCallback, useEffect } from "react";
-import {
-  Link,
-  NavLink,
-  Outlet,
-  useLocation,
-  useParams,
-  useSearchParams,
-} from "react-router-dom";
+import { Outlet, useParams, useSearchParams } from "react-router-dom";
 import useUserStore from "../store/userStore";
-import ProfileButton from "../components/ProfileButton";
 import env from "../conf/env";
-import CreateChannelForm from "../components/CreateServerForm";
 import useServerStore from "../store/serverStore";
 import useHandleAuthError from "../hooks/useHandleAuthError";
 import { toast, Toaster } from "sonner";
 import useSocket from "../socket/useSocket";
-import ServerIcon from "../components/ServerIcon";
-import Channels from "../components/Channels";
-import { Separator } from "../components/ui/separator";
-import { FaMessage } from "react-icons/fa6";
-import Conversations from "../components/Conversations";
-import UpdateServerForm from "../components/UpdateServerForm";
 import type { IServer } from "../types/IServer";
 import Members from "../components/Members";
+import Sidebar from "../components/Sidebar";
+import { IoMenu } from "react-icons/io5";
+import useFeatureStore from "../store/featureStore";
 
 function Layout() {
   const user = useUserStore((s) => s.user);
@@ -36,7 +24,6 @@ function Layout() {
   const { serverId } = useParams();
   const [searchParams] = useSearchParams();
   const joinedServerId = searchParams.get("joinServer");
-  const location = useLocation().pathname;
 
   const { handleAuthError } = useHandleAuthError();
 
@@ -120,68 +107,37 @@ function Layout() {
   return (
     <div>
       <div className="flex w-full h-screen max-h-screen overflow-hidden bg-zinc-900 text-zinc-100">
-        <section className="p-1 space-y-1">
-          <NavLink
-            to="/dm"
-            className={({ isActive }) =>
-              `flex items-center justify-center select-none h-10 w-10 mt-1 transition-all duration-50 font-semibold ${
-                isActive
-                  ? "bg-violet-500 rounded-xl"
-                  : "bg-zinc-700/50 rounded-full text-zinc-300 hover:rounded-xl"
-              }  cursor-pointer`
-            }
-          >
-            <FaMessage />
-          </NavLink>
-          {servers.length > 0 &&
-            servers.map(({ id, name, owner_id }) => (
-              <ServerIcon
-                id={id}
-                key={id}
-                name={name}
-                isOwner={owner_id?.toString() === user?.id.toString()}
-              />
-            ))}
-          <Separator className="bg-zinc-800 mt-1.5" />
-          <CreateChannelForm />
-        </section>
-        <div className="min-w-[180px] md:min-w-[220px] py-6 px-4 bg-zinc-800/50 relative">
-          <Link
-            className="text-xl font-semibold flex justify-between items-center group"
-            to={location.includes("/dm") ? "/dm" : `/s/${serverId}`}
-          >
-            <span className="inline-block">
-              {servers.find((s) => s.id.toString() === serverId)?.name ||
-                (location.includes("/dm") ? "Direct Messages" : "TechyScord")}
-            </span>
-            {serverId && (
-              <span className="inline-block">
-                <UpdateServerForm
-                  id={Number(serverId)}
-                  name={
-                    servers.find((s) => s.id.toString() === serverId)?.name ||
-                    ""
-                  }
-                />
-              </span>
-            )}
-          </Link>
-          <input
-            type="text"
-            placeholder="Search a channel"
-            className="my-4 w-full py-2 px-4 bg-zinc-700/50 rounded-md"
-          />
-          {location.includes("/dm") ? <Conversations /> : <Channels />}
-          <ProfileButton />
-        </div>
+        <Sidebar className="hidden sm:flex" />
         <div className="w-full">
+          <Menu />
           <Outlet />
         </div>
-        <Members />
+        <Members className="hidden md:block" />
       </div>
       <Toaster />
     </div>
   );
 }
+
+
+const Menu = () => {
+  const open = useFeatureStore((s) => s.sidebarOpen);
+  const setOpen = useFeatureStore((s) => s.setSidebarOpen);
+  return (
+    <>
+      <button
+        onClick={() => setOpen(!open)}
+        className="h-12 w-12 cursor-pointer sm:hidden z-50 fixed top-4 left-4 aspect-square flex justify-center items-center bg-zinc-800 rounded-md mr-2"
+      >
+        <IoMenu />
+      </button>
+      <Sidebar
+        className={`flex sm:hidden fixed top-0 left-0 z-50 transition-all duration-200 h-full w-full xs:w-fit bg-zinc-900 ${
+          open ? "" : "-translate-x-full"
+        }`}
+      />
+    </>
+  );
+};
 
 export default Layout;

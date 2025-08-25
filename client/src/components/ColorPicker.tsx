@@ -23,14 +23,22 @@ function ColorPicker({
   }, [debouncedColor, setUser]);
 
   return (
-    <input
-      className="h-6 w-10"
-      type="color"
-      name="profileColor"
-      id="profileColor"
-      value={localColor}
-      onChange={(e) => setLocalColor(e.target.value)}
-    />
+    <span className="inline-block">
+      <label htmlFor="profileColor" className="cursor-pointer">
+        <span
+          className="h-10 w-10 rounded-md border shadow-sm inline-block"
+          style={{ backgroundColor: localColor }}
+        />
+      </label>
+      <input
+        id="profileColor"
+        name="profileColor"
+        type="color"
+        value={localColor}
+        onChange={(e) => setLocalColor(e.target.value)}
+        className="sr-only"
+      />
+    </span>
   );
 }
 

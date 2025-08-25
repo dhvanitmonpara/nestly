@@ -18,6 +18,7 @@ import { FaVoicemail } from "react-icons/fa";
 import type { IChannel } from "../types/IChannel";
 import { IoChatbubbleSharp } from "react-icons/io5";
 import clsx from "clsx";
+import useFeatureStore from "../store/featureStore";
 
 function ChannelCard({
   id,
@@ -37,6 +38,7 @@ function ChannelCard({
   const [open, setOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editInput, setEditInput] = useState("");
+  const setSidebarOpen = useFeatureStore((s) => s.setSidebarOpen);
 
   const { handleAuthError } = useHandleAuthError();
   const navigate = useNavigate();
@@ -96,6 +98,7 @@ function ChannelCard({
     <Link
       to={`/s/${serverId}/c/${id}${type === "voice" ? "/rooms" : ""}`}
       key={id}
+      onClick={() => setSidebarOpen(false)}
       className={clsx(
         "flex items-center justify-between group cursor-pointer rounded-md",
         editMode ? "transition-colors" : "px-3 hover:bg-zinc-700/50",
@@ -145,7 +148,7 @@ function ChannelCard({
           <DropdownMenu open={open} onOpenChange={setOpen}>
             <DropdownMenuTrigger
               onClick={(e) => e.stopPropagation()}
-              className="hover:bg-zinc-300 hover:text-zinc-900 opacity-0 group-hover:opacity-100 transition-colors px-2 py-1 my-1 rounded-full cursor-pointer"
+              className="hover:bg-zinc-300 hover:text-zinc-900 md:opacity-0 md:group-hover:opacity-100 transition-colors px-2 py-1 my-1 rounded-full cursor-pointer"
             >
               <HiDotsHorizontal />
             </DropdownMenuTrigger>
