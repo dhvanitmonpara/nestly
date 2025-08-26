@@ -185,9 +185,8 @@ function ChatPage() {
           <SendMessage<IChannel>
             setChannel={setChannel}
             lastMessage={
-              channel?.messages[
-                channel.messages.length - 1
-              ].user.username !== user?.username
+              channel?.messages[channel.messages.length - 1].user.username !==
+              user?.username
                 ? channel?.messages[channel.messages.length - 1].content ?? null
                 : null
             }
