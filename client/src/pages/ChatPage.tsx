@@ -187,7 +187,7 @@ function ChatPage() {
             lastMessage={
               channel?.messages[
                 channel.messages.length - 1
-              ].user_id?.toString() !== user?.id
+              ].user.username !== user?.username
                 ? channel?.messages[channel.messages.length - 1].content ?? null
                 : null
             }

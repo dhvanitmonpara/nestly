@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import env from "../conf/env";
 import { toast } from "sonner";
 
@@ -15,7 +15,7 @@ function Suggestions({
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const getReplySuggestions = async () => {
+  const getReplySuggestions = useCallback(async () => {
     if (!lastMessage) return; // don't fetch if empty
 
     try {
@@ -37,12 +37,11 @@ function Suggestions({
     } finally {
       setLoading(false);
     }
-  };
+  }, [lastMessage]);
 
   useEffect(() => {
     getReplySuggestions();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [getReplySuggestions]);
 
   return (
     <div
@@ -50,10 +49,7 @@ function Suggestions({
         isTyping ? "bottom-20 mb-2" : "bottom-16"
       } transition-all duration-200 left-0 px-8 w-full flex items-center space-x-2`}
     >
-      {loading &&
-        Array.from({ length: 3 }).map(() => (
-          <p className="h-6 w-40 bg-zinc-800 rounded-md animate-pulse"></p>
-        ))}
+      {loading && Array.from({ length: 3 }).map(() => <p className="h-6 w-40 bg-zinc-800 rounded-md animate-pulse"></p>)}
       {!loading &&
         suggestions?.map((suggestion) => (
           <p
