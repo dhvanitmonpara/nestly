@@ -66,7 +66,7 @@ function DirectConversationCard({
         e.stopPropagation();
         setSidebarOpen(false);
       }}
-      className={`flex items-center justify-between group px-3 hover:bg-zinc-700/50 ${
+      className={`flex items-center justify-between group/card px-3 hover:bg-zinc-700/50 ${
         id.toString() === conversationId && "bg-zinc-700/50"
       } cursor-pointer rounded-md`}
     >
@@ -80,13 +80,13 @@ function DirectConversationCard({
         >
           {name.slice(0, 2)}
         </div>
-        <div className="text-sm font-semibold">{name}</div>
+        <div className="text-sm font-semibold truncate">{name}</div>
       </div>
       <div className="space-x-1 flex justify-center items-center">
         <DropdownMenu open={open} onOpenChange={setOpen}>
           <DropdownMenuTrigger
             onClick={(e) => e.stopPropagation()}
-            className="hover:bg-zinc-300 hover:text-zinc-900 opacity-0 group-hover:opacity-100 transition-colors px-2 py-1 my-1 rounded-full cursor-pointer"
+            className="hover:bg-zinc-300 hover:text-zinc-900 opacity-0 group-hover/card:opacity-100 transition-colors px-2 py-1 my-1 rounded-full cursor-pointer"
           >
             <HiDotsHorizontal />
           </DropdownMenuTrigger>

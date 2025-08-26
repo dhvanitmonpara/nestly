@@ -100,7 +100,7 @@ function ChannelCard({
       key={id}
       onClick={() => setSidebarOpen(false)}
       className={clsx(
-        "flex items-center justify-between group cursor-pointer rounded-md",
+        "flex items-center justify-between group/card cursor-pointer rounded-md",
         editMode ? "transition-colors" : "px-3 hover:bg-zinc-700/50",
         !isOwner && "py-2",
         id.toString() === channelId && "bg-zinc-700/50"
@@ -148,7 +148,7 @@ function ChannelCard({
           <DropdownMenu open={open} onOpenChange={setOpen}>
             <DropdownMenuTrigger
               onClick={(e) => e.stopPropagation()}
-              className="hover:bg-zinc-300 hover:text-zinc-900 md:opacity-0 md:group-hover:opacity-100 transition-colors px-2 py-1 my-1 rounded-full cursor-pointer"
+              className="hover:bg-zinc-300 hover:text-zinc-900 md:opacity-0 md:group-hover/card:opacity-100 transition-colors px-2 py-1 my-1 rounded-full cursor-pointer"
             >
               <HiDotsHorizontal />
             </DropdownMenuTrigger>
