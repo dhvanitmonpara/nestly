@@ -211,7 +211,19 @@ function DirectChatPage() {
               </div>
             )}
           </div>
-          <SendMessage<IConversation> setChannel={setConversation} />
+          {conversation?.messages && (
+            <SendMessage<IConversation>
+              lastMessage={
+                conversation.messages[
+                  conversation.messages.length - 1
+                ].sender_id.toString() !== user?.id.toString()
+                  ? conversation?.messages[conversation.messages.length - 1]
+                      .content ?? null
+                  : null
+              }
+              setChannel={setConversation}
+            />
+          )}
           <div ref={messagesEndRef} />
         </div>
       </div>
