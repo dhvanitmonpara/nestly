@@ -24,7 +24,7 @@ type MessageCardProps<T> = {
   setChannel: React.Dispatch<React.SetStateAction<T | null>>;
   id: string;
   username: string;
-  display_name: string
+  display_name: string;
   accent_color: string;
   content: string;
   createdAt: string | null;
@@ -209,8 +209,8 @@ function MessageForm<T extends IChannel | IConversation>({
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleUpdateMessage} className="space-y-4">
-              <input
-                type="text"
+              <textarea
+                rows={3}
                 placeholder="Type your message here..."
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
