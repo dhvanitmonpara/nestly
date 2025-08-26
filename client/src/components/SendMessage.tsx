@@ -46,7 +46,7 @@ function SendMessage<T extends IChannel | IConversation>({
       return;
     }
 
-    if (!message) {
+    if (!msg && !message) {
       toast.info("You can't send empty message");
       return;
     }
