@@ -182,12 +182,21 @@ function ChatPage() {
               </div>
             )}
           </div>
-          <SendMessage<IChannel> setChannel={setChannel} />
+          <SendMessage<IChannel>
+            setChannel={setChannel}
+            lastMessage={
+              channel?.messages[
+                channel.messages.length - 1
+              ].user_id?.toString() !== user?.id
+                ? channel?.messages[channel.messages.length - 1].content ?? null
+                : null
+            }
+          />
           <div ref={messagesEndRef} />
         </div>
       </div>
     </div>
   );
-};
+}
 
 export default ChatPage;

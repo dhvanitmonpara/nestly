@@ -4,6 +4,7 @@ import { ApiError } from "../utils/ApiError";
 import Message from "../models/message.model";
 import Channel from "../models/channel.model";
 import User from "../models/user.model";
+import generateSuggestionHandler from "../utils/generateSuggestion";
 
 export const createMessage = async (req: Request, res: Response) => {
   try {
@@ -106,5 +107,27 @@ export const updateMessage = async (req: Request, res: Response) => {
     });
   } catch (error) {
     handleError(error, res, "Failed to update message", "MESSAGE_UPDATE");
+  }
+};
+
+export const generateSuggestion = async (req: Request, res: Response) => {
+  try {
+    const { text } = req.body;
+
+    if (!text) throw new ApiError(400, "Text value is required");
+
+    const suggestions = await generateSuggestionHandler(text);
+
+    return res.status(201).json({
+      message: "Suggestions generated successfully",
+      suggestions
+    })
+  } catch (error) {
+    handleError(
+      error,
+      res,
+      "Failed to generate suggestion",
+      "SUGGESTION_ERROR"
+    );
   }
 };

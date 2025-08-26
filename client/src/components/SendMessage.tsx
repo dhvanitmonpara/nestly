@@ -7,13 +7,16 @@ import type { IMessage } from "../types/IMessage";
 import type { IChannel } from "../types/IChannel";
 import type { IDirectMessage } from "../types/IDirectMessage";
 import type { IConversation } from "../types/IConversation";
+import Suggestions from "./Suggestions";
 
 type SendMessageProps<T> = {
   setChannel: React.Dispatch<React.SetStateAction<T | null>>;
+  lastMessage: string | null;
 };
 
 function SendMessage<T extends IChannel | IConversation>({
   setChannel,
+  lastMessage,
 }: SendMessageProps<T>) {
   const [message, setMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -26,8 +29,11 @@ function SendMessage<T extends IChannel | IConversation>({
   const socket = useSocket();
   const user = useUserStore((s) => s.user);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = (
+    e: React.FormEvent<HTMLFormElement> | null,
+    msg?: string
+  ) => {
+    if (e) e.preventDefault();
     if (!socket.socket) return;
 
     if (!channelId && !conversationId) {
@@ -49,7 +55,7 @@ function SendMessage<T extends IChannel | IConversation>({
     if (conversationId) {
       newMessage = {
         id: Date.now().toString(),
-        content: message,
+        content: msg ?? message,
         conversation_id: conversationId,
         sender_id: user.id,
         createdAt: new Date().toISOString(),
@@ -57,7 +63,7 @@ function SendMessage<T extends IChannel | IConversation>({
     } else if (channelId) {
       newMessage = {
         id: Date.now().toString(),
-        content: message,
+        content: msg ?? message,
         channel_id: channelId,
         createdAt: new Date().toISOString(),
         user: {
@@ -140,36 +146,45 @@ function SendMessage<T extends IChannel | IConversation>({
   }, [channelId, conversationId, socket.socket]);
 
   return (
-    <div className="absolute bottom-0 left-4 w-[calc(100%-30px)] px-1 overflow-hidden">
-      <div
-        className={`text-xs text-zinc-900 bg-violet-500 rounded-t-sm mx-3 px-3 py-1 transition-all duration-100 ${
-          typingUsers.length > 0 ? "translate-y-0" : "translate-y-20"
-        }`}
-      >
-        {typingUsers.length > 0 &&
-          `${
-            typingUsers.length === 1
-              ? typingUsers[0] + " is typing..."
-              : typingUsers.join(", ") + " are typing..."
-          }`}
-      </div>
-      <form onSubmit={handleSubmit} className="relative pb-4 bg-zinc-900">
-        <input
-          onChange={handleTyping}
-          value={message}
-          type="text"
-          autoFocus
-          placeholder="Type a message"
-          className="w-full py-2 px-4 bg-zinc-800 rounded-md"
+    <>
+      {lastMessage && (
+        <Suggestions
+          isTyping={typingUsers.length > 0}
+          handleSend={(msg: string) => handleSubmit(null, msg)}
+          lastMessage={lastMessage}
         />
-        <button
-          type="submit"
-          className="bg-zinc-700 hover:bg-zinc-600 text-zinc-100 font-semibold px-3 py-2 rounded-md absolute right-0 cursor-pointer"
+      )}
+      <div className="absolute bottom-0 left-4 w-[calc(100%-30px)] px-1 overflow-hidden">
+        <div
+          className={`text-xs text-zinc-900 bg-violet-500 rounded-t-sm mx-3 px-3 py-1 transition-all duration-100 ${
+            typingUsers.length > 0 ? "translate-y-0" : "translate-y-20"
+          }`}
         >
-          Send
-        </button>
-      </form>
-    </div>
+          {typingUsers.length > 0 &&
+            `${
+              typingUsers.length === 1
+                ? typingUsers[0] + " is typing..."
+                : typingUsers.join(", ") + " are typing..."
+            }`}
+        </div>
+        <form onSubmit={handleSubmit} className="relative pb-4 bg-zinc-900">
+          <input
+            onChange={handleTyping}
+            value={message}
+            type="text"
+            autoFocus
+            placeholder="Type a message"
+            className="w-full py-2 px-4 bg-zinc-800 rounded-md"
+          />
+          <button
+            type="submit"
+            className="bg-zinc-700 hover:bg-zinc-600 text-zinc-100 font-semibold px-3 py-2 rounded-md absolute right-0 cursor-pointer"
+          >
+            Send
+          </button>
+        </form>
+      </div>
+    </>
   );
 }
 
