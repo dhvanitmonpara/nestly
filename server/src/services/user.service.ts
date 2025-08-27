@@ -125,6 +125,7 @@ class UserService {
 
       return { accessToken, refreshToken, userAgent, ip };
     } catch (error) {
+      console.log(error)
       throw new ApiError(
         500,
         "Something went wrong while generating access and refresh token"

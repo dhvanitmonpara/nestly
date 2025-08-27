@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import env from "../conf/env";
 
-function OtpVerfificationPage() {
+function OtpVerificationPage() {
   const [loading, setLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
   const [attempts, setAttempts] = useState(0);
@@ -121,4 +121,4 @@ function OtpVerfificationPage() {
   );
 }
 
-export default OtpVerfificationPage;
+export default OtpVerificationPage;

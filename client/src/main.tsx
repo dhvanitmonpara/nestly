@@ -7,7 +7,7 @@ import ChatPage from './pages/ChatPage.tsx'
 import SigninPage from './pages/SigninPage.tsx'
 import SignupPage from './pages/SignupPage.tsx'
 import AuthLayout from './layouts/AuthLayout.tsx'
-import OtpVerfificationPage from './pages/OtpVerfificationPage.tsx'
+import OtpVerificationPage from './pages/OtpVerificationPage.tsx'
 import UserSetupPage from './pages/UserSetupPage.tsx'
 import { SocketProvider } from './socket/socketContext.tsx'
 import ProfilePage from './pages/ProfilePage.tsx'
@@ -16,6 +16,7 @@ import Room from './components/Room.tsx'
 import { FaMessage, FaUserGroup } from 'react-icons/fa6'
 import ShowWarning from './components/ShowWarning.tsx'
 import DirectChatPage from './pages/DirectChatPage.tsx'
+import OAuthSetupPage from './pages/OAuthSetupPage.tsx'
 
 const router = createBrowserRouter([
   {
@@ -32,12 +33,16 @@ const router = createBrowserRouter([
       },
       {
         path: "verify-otp/:email",
-        element: <OtpVerfificationPage />,
+        element: <OtpVerificationPage />,
       },
       {
         path: "setup/:email",
         element: <UserSetupPage />,
       },
+      {
+        path: "oauth/callback",
+        element: <OAuthSetupPage />
+      }
     ]
   },
   {

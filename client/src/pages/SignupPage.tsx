@@ -5,6 +5,9 @@ import InputBox from "../components/InputBox";
 import { Link, useNavigate } from "react-router-dom";
 import env from "../conf/env";
 import { useForm, type SubmitHandler } from "react-hook-form";
+import { handleGoogleOAuthRedirect } from "../utils/googleOAuthRedirect";
+import { FaGoogle } from "react-icons/fa";
+import { Separator } from "../components/ui/separator";
 
 export type SignupDataType = {
   email: string;
@@ -55,10 +58,10 @@ function SignupPage() {
   };
 
   return (
-    <div>
+    <div className="p-4 border-zinc-800 border rounded-md text-zinc-100 w-96">
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="p-4 border-zinc-800 border rounded-md text-zinc-100 space-y-3 w-96"
+        className="space-y-3"
       >
         <h3 className="text-3xl py-2">Sign Up</h3>
         <InputBox
@@ -102,13 +105,26 @@ function SignupPage() {
         {errors.root?.message && (
           <span className="text-sm text-red-500">{errors.root.message}</span>
         )}
-        <p className="text-center text-sm">
-          Already have an account?{" "}
-          <Link className="text-blue-500 hover:underline" to="/auth/signin">
-            Sign in
-          </Link>
-        </p>
       </form>
+      <p className="flex justify-center items-center my-3 text-xs">
+        <Separator className="shrink bg-zinc-500" />
+        <span className="px-4 text-zinc-500 dark:text-zinc-500 text-xs">
+          Or
+        </span>
+        <Separator className="shrink bg-zinc-500" />
+      </p>
+      <form onSubmit={handleGoogleOAuthRedirect}>
+        <button className="px-4 py-2 flex justify-center items-center space-x-2.5 bg-zinc-200 text-zinc-900 font-semibold w-full rounded-md hover:bg-zinc-300 cursor-pointer disabled:opacity-60">
+          <FaGoogle />
+          <span>Sign up with Google</span>
+        </button>
+      </form>
+      <p className="text-center text-sm pt-3">
+        Already have an account?{" "}
+        <Link className="text-blue-500 hover:underline" to="/auth/signin">
+          Sign in
+        </Link>
+      </p>
     </div>
   );
 }

@@ -21,6 +21,10 @@ const User = sequelize.define("users", {
   },
   password: {
     type: DataTypes.STRING,
+    allowNull: true
+  },
+  auth_type:{
+    type: DataTypes.ENUM("oauth", "manual"),
     allowNull: false
   },
   refresh_token: {

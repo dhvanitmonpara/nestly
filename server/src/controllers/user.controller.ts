@@ -10,8 +10,141 @@ import User from "../models/user.model";
 import bcrypt from "bcryptjs";
 import nodeCache from "../services/cache.service";
 import { Op } from "sequelize";
+import axios from "axios";
 
 const userService = new UserService();
+
+export const googleCallback = async (req: Request, res: Response) => {
+  const code = req.query.code;
+
+  try {
+    // 🔄 Exchange code for tokens
+    const { data } = await axios.post(
+      "https://oauth2.googleapis.com/token",
+      null,
+      {
+        params: {
+          code,
+          client_id: env.GOOGLE_OAUTH_CLIENT_ID,
+          client_secret: env.GOOGLE_OAUTH_CLIENT_SECRET,
+          redirect_uri: `${env.SERVER_BASE_URI}/api/v1/users/google/callback`,
+          grant_type: "authorization_code",
+        },
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
+    );
+
+    const { access_token } = data;
+
+    // 🙋 Get user info
+    const userInfoRes = await axios.get(
+      "https://www.googleapis.com/oauth2/v2/userinfo",
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      }
+    );
+
+    const user = userInfoRes.data;
+
+    const existingUser = await User.findOne({
+      where: { email: user.email.toLowerCase() },
+    });
+
+    if (existingUser) {
+      const { accessToken, refreshToken } =
+        await userService.generateAccessAndRefreshToken(
+          existingUser.dataValues.id,
+          req
+        );
+
+      return res
+        .status(200)
+        .cookie("__accessToken", accessToken, {
+          ...userService.options,
+          maxAge: userService.accessTokenExpiry,
+        })
+        .cookie("__refreshToken", refreshToken, {
+          ...userService.options,
+          maxAge: userService.refreshTokenExpiry,
+        })
+        .redirect(env.ACCESS_CONTROL_ORIGIN);
+    }
+
+    res.redirect(
+      `${env.ACCESS_CONTROL_ORIGIN}/auth/oauth/callback?email=${user.email}`
+    );
+  } catch (err) {
+    handleError(
+      err as ApiError,
+      res,
+      "Failed to login with Google",
+      "GOOGLE_LOGIN_ERROR"
+    );
+  }
+};
+
+export const handleUserOAuth = async (req: Request, res: Response) => {
+  try {
+    const { email, username } = req.body;
+    if (!email) throw new ApiError(400, "Email is required");
+
+    const createdUser = await User.create(
+      {
+        email,
+        username,
+        display_name: username,
+        password: null,
+        auth_type: "oauth"
+      },
+      {
+        returning: true,
+      }
+    );
+
+    if (!createdUser) throw new ApiError(500, "Failed to create user");
+
+    const { accessToken, refreshToken, userAgent, ip } =
+      await userService.generateAccessAndRefreshToken(createdUser.dataValues.id, req);
+
+    if (!accessToken || !refreshToken) {
+      res
+        .status(500)
+        .json({ error: "Failed to generate access and refresh token" });
+      return;
+    }
+
+    res
+      .status(201)
+      .cookie("__accessToken", accessToken, {
+        ...userService.options,
+        maxAge: userService.accessTokenExpiry,
+      })
+      .cookie("__refreshToken", refreshToken, {
+        ...userService.options,
+        maxAge: userService.refreshTokenExpiry,
+      })
+      .json({
+        message: "Form submitted successfully!",
+        data: {
+          ...createdUser,
+          refreshToken: null,
+          password: null,
+          email: null,
+        },
+      });
+  } catch (error) {
+    handleError(
+      error as ApiError,
+      res,
+      "Failed to register user",
+      "REGISTER_USER_ERROR"
+    );
+  }
+};
 
 export const initializeUser = async (req: Request, res: Response) => {
   try {
@@ -85,6 +218,7 @@ export const registerUser = async (req: Request, res: Response) => {
         password: encryptedPassword,
         username,
         display_name: username,
+        auth_type: "manual"
       },
       {
         returning: true,
@@ -327,13 +461,9 @@ export const sendOtp = async (req: Request, res: Response) => {
       throw new ApiError(500, mailResponse.error || "Failed to send OTP");
     if (!mailResponse.otpCode) throw new ApiError(500, "Failed to send OTP");
 
-    const hashedOTP = await hashOTP(mailResponse.otpCode)
+    const hashedOTP = await hashOTP(mailResponse.otpCode);
 
-    const cacheSuccess = nodeCache.set(
-      `otp:${email}`,
-      hashedOTP,
-      65
-    );
+    const cacheSuccess = nodeCache.set(`otp:${email}`, hashedOTP, 65);
 
     if (!cacheSuccess) {
       console.error("Failed to set OTP in Redis:", res);
