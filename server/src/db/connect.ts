@@ -1,4 +1,4 @@
-import { Sequelize } from 'sequelize';
+import { Dialect, Sequelize } from 'sequelize';
 import { env } from '../conf/env';
 
 export const sequelize = new Sequelize(
@@ -7,9 +7,15 @@ export const sequelize = new Sequelize(
   env.MYSQL_PASSWORD,
   {
     host: env.MYSQL_HOST,
-    port: env.MYSQL_PORT,
-    dialect: env.DB_TYPE as any,
-    logging: false, // optional: disable logging
+    port: Number(env.MYSQL_PORT),
+    dialect: env.DB_TYPE as Dialect,
+    logging: false,
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false,
+      },
+    },
   }
 );
 

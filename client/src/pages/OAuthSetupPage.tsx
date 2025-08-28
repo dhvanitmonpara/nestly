@@ -45,7 +45,7 @@ function OAuthSetupPage() {
 
       const response = await axios.post(
         `${env.SERVER_ENDPOINT}/users/oauth`,
-        { email: email, username: data.username },
+        { email, username: data.username },
         { withCredentials: true }
       );
 
