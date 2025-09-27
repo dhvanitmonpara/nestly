@@ -1,16 +1,17 @@
-import DirectMessage from "../models/directMessage.model";
-import Message from "../models/message.model";
 import { ApiError } from "../utils/ApiError";
 import handleError from "../utils/HandleError";
+import prisma from "../db/db"
 
-const createMessage = async (content: string, user_id: string, channel_id: string) => {
+const createMessage = async (content: string, userId: number, channelId: number) => {
   try {
 
     if (!content) throw new ApiError(400, "Message is required");
-    const message = await Message.create({
-      content,
-      user_id,
-      channel_id
+    const message = await prisma.message.create({
+      data: {
+        content,
+        userId,
+        channelId
+      }
     })
 
     if (!message) {
@@ -26,10 +27,12 @@ const createMessage = async (content: string, user_id: string, channel_id: strin
 const createDirectMessage = async (content: string, sender_id: string, conversation_id: string) => {
   try {
     if (!content) throw new ApiError(400, "Message is required")
-    const message = await DirectMessage.create({
-      content,
-      conversation_id,
-      sender_id
+    const message = await prisma.directMessage.create({
+      data: {
+        content,
+        conversationId: Number(conversation_id),
+        senderId: Number(sender_id)
+      }
     })
 
     if (!message) throw new ApiError(400, "Failed to create message")

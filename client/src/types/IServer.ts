@@ -3,7 +3,7 @@ import type { IChannel } from "./IChannel";
 interface IServer {
   id: number;
   name: string;
-  owner_id: string;
+  ownerId: string;
   channels?: IChannel[]
 }
 

@@ -1,10 +1,7 @@
 import e, { Request, Response } from "express";
 import handleError from "../utils/HandleError";
 import { ApiError } from "../utils/ApiError";
-import DirectConversation from "../models/directConversation.model";
-import { Op } from "sequelize";
-import User from "../models/user.model";
-import DirectMessage from "../models/directMessage.model";
+import prisma from "../db/db";
 
 export const createDirectConversation = async (req: Request, res: Response) => {
   try {
@@ -13,25 +10,31 @@ export const createDirectConversation = async (req: Request, res: Response) => {
     if (!user_id1 || !user_id2)
       throw new ApiError(400, "User ID 1 and 2 are required");
 
-    const conversation = await DirectConversation.findOne({
+    const conversation = await prisma.directConversation.findFirst({
       where: {
-        [Op.or]: [
-          { user_id1, user_id2 },
-          { user_id1: user_id2, user_id2: user_id1 },
+        OR: [
+          { userId1: Number(user_id1), userId2: Number(user_id2) },
+          { userId1: Number(user_id2), userId2: Number(user_id1) },
         ],
       },
-      include: [
-        {
-          model: User,
-          as: "user1",
-          attributes: ["username", "id", "display_name", "accent_color"],
+      include: {
+        user1: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            accentColor: true,
+          },
         },
-        {
-          model: User,
-          as: "user2",
-          attributes: ["username", "id", "display_name", "accent_color"],
+        user2: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            accentColor: true,
+          },
         },
-      ],
+      },
     });
 
     if (conversation) {
@@ -41,24 +44,35 @@ export const createDirectConversation = async (req: Request, res: Response) => {
       });
     }
 
-    const newConversation = await DirectConversation.create({
-      user_id1,
-      user_id2,
+    const newConversation = await prisma.directConversation.create({
+      data: {
+        userId1: Number(user_id1),
+        userId2: Number(user_id2),
+      },
     });
 
-    const createdConversation = await DirectConversation.findByPk(newConversation.dataValues.id, {
-      include: [
-        {
-          model: User,
-          as: "user1",
-          attributes: ["username", "id", "display_name", "accent_color"],
+    const createdConversation = await prisma.directConversation.findUnique({
+      where: {
+        id: newConversation.id,
+      },
+      include: {
+        user1: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            accentColor: true,
+          },
         },
-        {
-          model: User,
-          as: "user2",
-          attributes: ["username", "id", "display_name", "accent_color"],
+        user2: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            accentColor: true,
+          },
         },
-      ],
+      },
     });
 
     return res.status(201).json({
@@ -69,7 +83,7 @@ export const createDirectConversation = async (req: Request, res: Response) => {
     handleError(
       error,
       res,
-      "Failed to create conversation",
+      "Failed to create direct conversation",
       "CREATE_DIRECT_CONVERSATION"
     );
   }
@@ -79,22 +93,28 @@ export const listDirectConversations = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
 
-    const conversations = await DirectConversation.findAll({
+    const conversations = await prisma.directConversation.findMany({
       where: {
-        [Op.or]: [{ user_id1: userId }, { user_id2: userId }],
+        OR: [{ userId1: Number(userId) }, { userId2: Number(userId) }],
       },
-      include: [
-        {
-          model: User,
-          as: "user1",
-          attributes: ["username", "id", "display_name", "accent_color"],
+      include: {
+        user1: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            accentColor: true,
+          },
         },
-        {
-          model: User,
-          as: "user2",
-          attributes: ["username", "id", "display_name", "accent_color"],
+        user2: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            accentColor: true,
+          },
         },
-      ],
+      },
     });
 
     return res.status(200).json({
@@ -115,17 +135,25 @@ export const deleteDirectConversation = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const conversation = await DirectConversation.findByPk(id);
-
-    if (!conversation) throw new ApiError(404, "Direct conversation not found");
-
-    await DirectMessage.destroy({
+    const conversation = await prisma.directConversation.findUnique({
       where: {
-        conversation_id: id,
+        id: Number(id),
       },
     });
 
-    await conversation.destroy();
+    if (!conversation) throw new ApiError(404, "Direct conversation not found");
+
+    await prisma.directMessage.deleteMany({
+      where: {
+        conversationId: Number(id),
+      },
+    });
+
+    await prisma.directConversation.delete({
+      where: {
+        id: Number(id),
+      },
+    });
 
     return res.status(200).json({
       message: "Direct conversation deleted successfully",
@@ -147,34 +175,43 @@ export const getDirectConversationMessages = async (
   try {
     const { id } = req.params;
 
-    const conversation = await DirectConversation.findByPk(id, {
-      include: [
-        {
-          model: User,
-          as: "user1",
-          attributes: ["username", "id", "display_name", "accent_color"],
+    const conversation = await prisma.directConversation.findUnique({
+      where: {
+        id: Number(id),
+      },
+      include: {
+        user1: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            accentColor: true,
+          },
         },
-        {
-          model: User,
-          as: "user2",
-          attributes: ["username", "id", "display_name", "accent_color"],
+        user2: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            accentColor: true,
+          },
         },
-      ],
+      },
     });
 
     if (!conversation) throw new ApiError(404, "Direct conversation not found");
 
-    const messages = await DirectMessage.findAll({
+    const messages = await prisma.directMessage.findMany({
       where: {
-        conversation_id: id,
+        conversationId: Number(id),
       },
     });
 
     return res.status(200).json({
       message: "Direct conversation messages fetched successfully",
       conversation: {
-        ...conversation.dataValues,
-        messages: messages.map((msg) => msg.dataValues),
+        ...conversation,
+        messages,
       },
     });
   } catch (error) {
@@ -191,26 +228,35 @@ export const getConversationUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const conversation = await DirectConversation.findByPk(id, {
-      include: [
-        {
-          model: User,
-          as: "user1",
-          attributes: ["username", "id", "display_name", "accent_color"],
+    const conversation = await prisma.directConversation.findUnique({
+      where: {
+        id: Number(id),
+      },
+      include: {
+        user1: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            accentColor: true,
+          },
         },
-        {
-          model: User,
-          as: "user2",
-          attributes: ["username", "id", "display_name", "accent_color"],
+        user2: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            accentColor: true,
+          },
         },
-      ],
+      },
     });
 
     if (!conversation) throw new ApiError(404, "Direct conversation not found");
 
     return res.status(200).json({
       message: "Direct conversation users fetched successfully",
-      users: [conversation.dataValues.user1, conversation.dataValues.user2],
+      users: [conversation.user1, conversation.user2],
     });
   } catch (error) {
     handleError(
@@ -228,11 +274,19 @@ export const deleteDirectMessage = async (req: Request, res: Response) => {
 
     if (!id) throw new ApiError(400, "Message Id is required");
 
-    const message = await DirectMessage.findByPk(id);
+    const message = await prisma.directMessage.findUnique({
+      where: {
+        id: Number(id),
+      },
+    });
 
     if (!message) throw new ApiError(404, "Message not found");
 
-    await DirectMessage.destroy({ where: { id } });
+    await prisma.directMessage.delete({
+      where: {
+        id: Number(id),
+      },
+    });
 
     return res.status(200).json({
       message: "Message deleted successfully",
@@ -250,15 +304,26 @@ export const updateDirectMessage = async (req: Request, res: Response) => {
     if (!id) throw new ApiError(400, "Message Id is required");
     if (!content) throw new ApiError(400, "Content is required");
 
-    const message = await DirectMessage.findByPk(id);
+    const message = await prisma.directMessage.findUnique({
+      where: {
+        id: Number(id),
+      },
+    });
 
     if (!message) throw new ApiError(404, "Message not found");
 
-    await DirectMessage.update({ content }, { where: { id }, returning: true });
+    const updatedMessage = await prisma.directMessage.update({
+      where: {
+        id: Number(id),
+      },
+      data: {
+        content,
+      },
+    });
 
     return res.status(200).json({
       message: "Message updated successfully",
-      messageObject: { ...message.dataValues, content },
+      messageObject: { ...updatedMessage, content },
     });
   } catch (error) {
     handleError(error, res, "Failed to update message", "MESSAGE_UPDATE");

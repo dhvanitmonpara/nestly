@@ -3,12 +3,7 @@ import { z } from "zod";
 
 const envSchema = z.object({
   PORT: z.coerce.number().default(8000),
-  MYSQL_HOST: z.string(),
-  MYSQL_USER: z.string(),
-  MYSQL_PORT: z.coerce.number().default(3306),
-  MYSQL_PASSWORD: z.string(),
-  MYSQL_DATABASE: z.string(),
-  DB_TYPE: z.string(),
+  DATABASE_URL: z.string(),
   ENVIRONMENT: z.enum(["development", "production", "test"]),
   HTTP_SECURE_OPTION: z.string(),
   ACCESS_CONTROL_ORIGIN: z.string(),

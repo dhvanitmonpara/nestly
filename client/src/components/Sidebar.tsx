@@ -32,7 +32,7 @@ function Sidebar({ className }: { className?: string }) {
           className={({ isActive }) =>
             `flex items-center justify-center select-none h-10 w-10 mt-1 transition-all duration-50 font-semibold ${
               isActive
-                ? "bg-violet-500 rounded-xl"
+                ? "bg-indigo-500 rounded-xl"
                 : "bg-zinc-700/50 rounded-full text-zinc-300 hover:rounded-xl"
             }  cursor-pointer`
           }
@@ -40,12 +40,12 @@ function Sidebar({ className }: { className?: string }) {
           <FaMessage />
         </NavLink>
         {servers.length > 0 &&
-          servers.map(({ id, name, owner_id }) => (
+          servers.map(({ id, name, ownerId }) => (
             <ServerIcon
               id={id}
               key={id}
               name={name}
-              isOwner={owner_id?.toString() === user?.id.toString()}
+              isOwner={ownerId?.toString() === user?.id.toString()}
             />
           ))}
         <Separator className="bg-zinc-800 mt-1.5" />

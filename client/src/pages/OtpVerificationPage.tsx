@@ -81,7 +81,7 @@ function OtpVerificationPage() {
   return (
     <div className="p-4 border-zinc-800 border rounded-md text-zinc-100 space-y-4 w-96">
       <h3 className="text-3xl text-center py-2">Verify email</h3>
-      <p className="text-sm text-center text-zinc-300">
+      <p className=" text-center text-zinc-300">
         Enter the 6-digit code we emailed to <b>{email}</b>. If you did not
         receive it, you can request a new one{" "}
         {timeLeft > 0 ? (
@@ -111,7 +111,7 @@ function OtpVerificationPage() {
           Max attempts reached, Try after some minutes.
         </p>
       )}
-      <p className="text-sm text-center text-zinc-300">
+      <p className=" text-center text-zinc-300">
         Want to login?{" "}
         <Link className="text-blue-500 hover:underline" to="/auth/signin">
           Sign In

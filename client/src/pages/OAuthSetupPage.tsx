@@ -100,9 +100,9 @@ function OAuthSetupPage() {
         )}
       </button>
       {errors.root && (
-        <p className="text-red-500 text-sm !mt-1">{errors.root?.message}</p>
+        <p className="text-red-500  !mt-1">{errors.root?.message}</p>
       )}
-      <p className="text-center text-sm">
+      <p className="text-center ">
         Already have an account?{" "}
         <Link className="text-blue-500 hover:underline" to="/auth/signup">
           Sign in

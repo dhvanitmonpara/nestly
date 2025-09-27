@@ -1,15 +1,10 @@
 import { env } from "../conf/env";
 import { randomUUID } from "crypto";
 import { ApiError } from "../utils/ApiError";
-import generateDeviceFingerprint, {
-  getDeviceName,
-  getLocationFromIP,
-} from "../utils/generateDeviceFingerprint";
-import sendMail from "../utils/sendMail";
+import generateDeviceFingerprint from "../utils/generateDeviceFingerprint";
 import { Request } from "express";
 import jwt from "jsonwebtoken";
-import User from "../models/user.model";
-import { IUser } from "../types/IUser";
+import prisma from "../db/db";
 
 class UserService {
   options: null | {
@@ -85,22 +80,16 @@ class UserService {
     );
   }
 
-  async generateAccessAndRefreshToken(userId: string, req: Request) {
+  async generateAccessAndRefreshToken(userId: number, req: Request) {
     try {
-      const user = await User.findOne({
-        where: { id: userId }
-      }) as IUser | null
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+      });
 
-      if (!user) throw new ApiError(404, "User not found")
+      if (!user) throw new ApiError(404, "User not found");
 
-      const accessToken = this.generateAccessToken(
-        user.id,
-        user.username,
-      );
-      const refreshToken = this.generateRefreshToken(
-        user.id,
-        user.username,
-      );
+      const accessToken = this.generateAccessToken(user.id, user.username);
+      const refreshToken = this.generateRefreshToken(user.id, user.username);
 
       const userAgent = await generateDeviceFingerprint(req);
       const rawIp =
@@ -112,20 +101,14 @@ class UserService {
         .split(",")[0]
         .trim();
 
-      user.refresh_token = refreshToken
-
-      await User.update(
-        {
-          refresh_token: user.refresh_token
-        },
-        {
-          where: { id: user.id }
-        }
-      );
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { refreshToken },
+      });
 
       return { accessToken, refreshToken, userAgent, ip };
     } catch (error) {
-      console.log(error)
+      console.log(error);
       throw new ApiError(
         500,
         "Something went wrong while generating access and refresh token"

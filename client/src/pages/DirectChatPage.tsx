@@ -147,8 +147,8 @@ function DirectChatPage() {
             <div className="sticky top-0 bg-zinc-900 pl-[4.5rem] sm:pl-4 px-4 pt-4">
               <h1 className="w-full h-12 bg-zinc-800 px-4 rounded-md flex justify-start items-center">
                 {conversation?.user_id1 === user?.id
-                  ? conversation?.user2?.display_name
-                  : conversation?.user1?.display_name ?? "Loading..."}
+                  ? conversation?.user2?.displayName
+                  : conversation?.user1?.displayName ?? "Loading..."}
               </h1>
             </div>
             {loading ? (
@@ -159,8 +159,8 @@ function DirectChatPage() {
                   <h3>
                     This is the beginning of an incredible conversation with{" "}
                     {conversation?.user_id1 === user?.id
-                      ? conversation?.user2?.display_name
-                      : conversation?.user1?.display_name}
+                      ? conversation?.user2?.displayName
+                      : conversation?.user1?.displayName}
                   </h3>
                 </div>
                 {conversation?.messages && conversation.messages.length > 0 ? (
@@ -183,15 +183,15 @@ function DirectChatPage() {
                         setChannel={setConversation}
                         continuesMessage={!isFirstFromUser}
                         id={chat.id}
-                        display_name={
+                        displayName={
                           chat.sender_id === conversation.user_id1
-                            ? conversation.user1.display_name
-                            : conversation.user2.display_name
+                            ? conversation.user1.displayName
+                            : conversation.user2.displayName
                         }
-                        accent_color={
+                        accentColor={
                           chat.sender_id === conversation.user_id1
-                            ? conversation.user1.accent_color
-                            : conversation.user2.accent_color
+                            ? conversation.user1.accentColor
+                            : conversation.user2.accentColor
                         }
                         content={chat.content}
                         createdAt={chat?.createdAt ?? null}
@@ -204,7 +204,7 @@ function DirectChatPage() {
                     );
                   })
                 ) : (
-                  <div className="text-zinc-400 text-sm px-6 pt-3 border-t border-zinc-800 h-40">
+                  <div className="text-zinc-400  px-6 pt-3 border-t border-zinc-800 h-40">
                     <h4>No messages yet</h4>
                   </div>
                 )}

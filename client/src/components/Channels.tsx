@@ -67,7 +67,7 @@ function Channels() {
 
   return (
     <div className="space-y-1">
-      {serverId && user?.id === server?.owner_id && (
+      {serverId && user?.id === server?.ownerId && (
         <CreateChannelForm setChannel={setChannels} />
       )}
       <Separator className="bg-zinc-800" />
@@ -84,13 +84,13 @@ function Channels() {
               roomParticipantsCount={count}
               type={channel.type}
               setChannel={setChannels}
-              isOwner={user?.id === server?.owner_id}
+              isOwner={user?.id === server?.ownerId}
             />
           );
         })
       ) : (
         <div className="h-96 flex justify-center items-center">
-          <p className="text-zinc-400 text-sm">No channels exists.</p>
+          <p className="text-zinc-400 ">No channels exists.</p>
         </div>
       )}
     </div>

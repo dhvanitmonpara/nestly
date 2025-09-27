@@ -68,9 +68,9 @@ function SendMessage<T extends IChannel | IConversation>({
         createdAt: new Date().toISOString(),
         user: {
           id: user.id,
-          accent_color: user.accent_color,
+          accentColor: user.accentColor,
           username: user.username,
-          display_name: user.display_name,
+          displayName: user.displayName,
         },
       };
     }
@@ -156,15 +156,13 @@ function SendMessage<T extends IChannel | IConversation>({
       )}
       <div className="absolute bottom-0 left-4 w-[calc(100%-30px)] px-1 overflow-hidden">
         <div
-          className={`text-xs text-zinc-900 bg-violet-500 rounded-t-sm mx-3 px-3 py-1 transition-all duration-100 ${
-            typingUsers.length > 0 ? "translate-y-0" : "translate-y-20"
-          }`}
+          className={` text-zinc-300 bg-indigo-500 rounded-t-sm mx-3 px-3 py-1 transition-all duration-100 ${typingUsers.length > 0 ? "translate-y-0" : "translate-y-20"
+            }`}
         >
           {typingUsers.length > 0 &&
-            `${
-              typingUsers.length === 1
-                ? typingUsers[0] + " is typing..."
-                : typingUsers.join(", ") + " are typing..."
+            `${typingUsers.length === 1
+              ? typingUsers[0] + " is typing..."
+              : typingUsers.join(", ") + " are typing..."
             }`}
         </div>
         <form onSubmit={handleSubmit} className="relative pb-4 bg-zinc-900">

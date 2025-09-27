@@ -53,7 +53,7 @@ function ServerIcon({
             key={id}
             className={`flex items-center justify-center select-none h-10 w-10 mt-1 transition-all duration-50 font-semibold ${
               id.toString() === serverId
-                ? "bg-violet-500 rounded-xl"
+                ? "bg-indigo-500 rounded-xl"
                 : "bg-zinc-700/50 text-zinc-300 rounded-full hover:rounded-xl"
             }  cursor-pointer`}
           >
@@ -66,14 +66,14 @@ function ServerIcon({
             className="text-zinc-100 focus:text-zinc-100 focus:bg-zinc-700 flex justify-start items-center space-x-1"
           >
             <MdEdit className="text-zinc-300" />
-            <span className="text-sm font-semibold text-zinc-300">Edit</span>
+            <span className=" font-semibold text-zinc-300">Edit</span>
           </ContextMenuItem>
           <ContextMenuItem
             onClick={handleShare}
             className="text-zinc-100 focus:text-zinc-100 focus:bg-zinc-700 flex justify-start items-center space-x-1"
           >
             <FaShare className="text-zinc-300" />
-            <span className="text-sm font-semibold text-zinc-300">Share</span>
+            <span className=" font-semibold text-zinc-300">Share</span>
           </ContextMenuItem>
           {isOwner ? (
             <ContextMenuItem
@@ -82,7 +82,7 @@ function ServerIcon({
               className="text-zinc-300 flex justify-start items-center space-x-1"
             >
               <MdDelete />
-              <span className="text-sm font-semibold">Delete</span>
+              <span className=" font-semibold">Delete</span>
             </ContextMenuItem>
           ) : (
             <ContextMenuItem
@@ -91,7 +91,7 @@ function ServerIcon({
               className="text-zinc-300 flex justify-start items-center space-x-1"
             >
               <MdDelete />
-              <span className="text-sm font-semibold">Leave</span>
+              <span className=" font-semibold">Leave</span>
             </ContextMenuItem>
           )}
         </ContextMenuContent>

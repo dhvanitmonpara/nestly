@@ -35,7 +35,7 @@ function JoinServerPage() {
 
                 setServer(res.data.server)
 
-                if (res.data.server.owner_id === user.id) {
+                if (res.data.server.ownerId === user.id) {
                     navigate(`/c/${serverId}`)
                 }
 
@@ -59,7 +59,7 @@ function JoinServerPage() {
 
             const res = await axios.post(`${env.SERVER_ENDPOINT}/servers/join`, {
                 user_id: user.id,
-                server_id: serverId
+                serverId
             }, { withCredentials: true })
 
             if (res.status !== 200) {
@@ -81,7 +81,7 @@ function JoinServerPage() {
                 <p>
                     Do you wanna join <span className="font-semibold">{server?.name}</span>?
                 </p>
-                {server?.owner_id !== user?.id && <button onClick={handleJoin} disabled={loading || fetching} className="bg-blue-700 font-semibold px-4 py-2 rounded-md hover:bg-blue-800 cursor-pointer">
+                {server?.ownerId !== user?.id && <button onClick={handleJoin} disabled={loading || fetching} className="bg-blue-700 font-semibold px-4 py-2 rounded-md hover:bg-blue-800 cursor-pointer">
                     {loading
                         ? <div className="flex justify-center items-center space-x-2">
                             <Loader2 className="animate-spin" />

@@ -56,7 +56,7 @@ function CreateServerForm() {
             if (mode === "create") {
                 const res = await axios.post(`${env.SERVER_ENDPOINT}/servers/create`, {
                     name: data.identifier,
-                    owner_id: user.id
+                    ownerId: user.id
                 }, { withCredentials: true })
 
                 if (res.status !== 200) {
@@ -85,9 +85,9 @@ function CreateServerForm() {
             </DialogTrigger>
             <DialogContent className="bg-zinc-900 text-zinc-100 border-zinc-800 !max-w-96">
                 <Tabs value={mode} onValueChange={v => setMode(v as ("create" | "join"))} defaultValue="create">
-                    <TabsList className="mb-4">
-                        <TabsTrigger value="create">Create</TabsTrigger>
-                        <TabsTrigger value="join">Join</TabsTrigger>
+                    <TabsList className="mb-4 bg-zinc-700">
+                        <TabsTrigger value="create" className="text-zinc-100">Create</TabsTrigger>
+                        <TabsTrigger value="join" className="text-zinc-100">Join</TabsTrigger>
                     </TabsList>
                     <TabsContent value="create" className="space-y-4">
                         <DialogHeader>

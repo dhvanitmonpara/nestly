@@ -10,8 +10,8 @@ declare module "socket.io" {
   interface Socket {
     userId?: string;
     username?: string;
-    accent_color?: string;
-    display_name?: string;
+    accentColor?: string;
+    displayName?: string;
   }
 }
 import healthRouter from "./routes/health.route";
@@ -54,8 +54,8 @@ const videocall = new VideocallService();
 io.on("connection", (socket) => {
   socket.userId = socket.handshake.auth.userId as string;
   socket.username = socket.handshake.auth.username as string;
-  socket.accent_color = socket.handshake.auth.accent_color as string;
-  socket.display_name = socket.handshake.auth.display_name as string;
+  socket.accentColor = socket.handshake.auth.accentColor as string;
+  socket.displayName = socket.handshake.auth.displayName as string;
 
   const handleUserGotOffline = () => {
     const serverIds = Array.from(socket.rooms);
@@ -88,8 +88,8 @@ io.on("connection", (socket) => {
     socket.to(conversationId).emit("userGotOnlineDM", {
       server_id: conversationId,
       user: {
-        accent_color: socket.accent_color,
-        display_name: socket.display_name,
+        accentColor: socket.accentColor,
+        displayName: socket.displayName,
         username: socket.username,
       },
       user_id: socket.userId,
@@ -102,8 +102,8 @@ io.on("connection", (socket) => {
         return {
           server_id: Array.from(sock.rooms),
           user: {
-            accent_color: sock.accent_color,
-            display_name: sock.display_name,
+            accentColor: sock.accentColor,
+            displayName: sock.displayName,
             username: sock.username,
           },
           user_id: sock.userId,
@@ -121,8 +121,8 @@ io.on("connection", (socket) => {
     socket.to(conversationId).emit("userGotOnlineDM", {
       server_id: conversationId,
       user: {
-        accent_color: socket.accent_color,
-        display_name: socket.display_name,
+        accentColor: socket.accentColor,
+        displayName: socket.displayName,
         username: socket.username,
       },
       user_id: socket.userId,
@@ -141,8 +141,8 @@ io.on("connection", (socket) => {
     socket.to(serverId).emit("userGotOnline", {
       server_id: serverId,
       user: {
-        accent_color: socket.accent_color,
-        display_name: socket.display_name,
+        accentColor: socket.accentColor,
+        displayName: socket.displayName,
         username: socket.username,
       },
       user_id: socket.userId,
@@ -155,8 +155,8 @@ io.on("connection", (socket) => {
         return {
           server_id: Array.from(sock.rooms),
           user: {
-            accent_color: sock.accent_color,
-            display_name: sock.display_name,
+            accentColor: sock.accentColor,
+            displayName: sock.displayName,
             username: sock.username,
           },
           user_id: sock.userId,
@@ -177,13 +177,13 @@ io.on("connection", (socket) => {
   socket.on("typing", ({ channelId, serverId }) => {
     socket
       .to(serverId)
-      .emit("user_typing", { username: socket.display_name, channelId });
+      .emit("user_typing", { username: socket.displayName, channelId });
   });
 
   socket.on("stop_typing", ({ channelId, serverId }) => {
     socket
       .to(serverId)
-      .emit("user_stop_typing", { username: socket.display_name, channelId });
+      .emit("user_stop_typing", { username: socket.displayName, channelId });
   });
 
   socket.on("userKicked", ({ userId, serverId }) => {

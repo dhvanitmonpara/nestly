@@ -43,11 +43,11 @@ function ProfileButton() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="rounded-md w-full p-1 flex space-x-2 cursor-pointer bg-zinc-800 hover:bg-zinc-700/40 transition-colors border-zinc-700 border absolute bottom-1 left-0">
-        <div style={{ color: `#${user?.accent_color}` }} className="bg-zinc-900 rounded-full w-8 h-8 flex items-center justify-center">
-          {user?.display_name.split("")[0].toUpperCase() ?? "U"}
+        <div style={{ color: `#${user?.accentColor}` }} className="bg-zinc-900 rounded-full w-8 h-8 flex items-center justify-center">
+          {user?.displayName.split("")[0].toUpperCase() ?? "U"}
         </div>
         <div>
-          <p className="text-xs text-start text-zinc-300 font-semibold">{user?.display_name}</p>
+          <p className="text-xs text-start text-zinc-300 font-semibold">{user?.displayName}</p>
           <p className="text-[0.70rem] text-start text-zinc-400">{user?.email}</p>
         </div>
       </DropdownMenuTrigger>

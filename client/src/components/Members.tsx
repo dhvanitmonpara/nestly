@@ -60,7 +60,7 @@ function Members({
 
       if (serverId) {
         const users = res.data.members.map((u: IncomingMemberType) => {
-          if (u.user_id === user?.id) {
+          if (u.userId === user?.id) {
             return { ...u, isOnline: true };
           }
           return u;
@@ -71,15 +71,15 @@ function Members({
           {
             ...res.data.owner,
             isOwner: true,
-            isOnline: user?.id === res.data.owner.user_id,
+            isOnline: user?.id === res.data.owner.userId,
           },
         ]);
         socket.emit("userOnline", { serverId });
       } else {
         const oppositeUser: IncomingMemberType = {
           user: res.data.users.find((u: IUser) => u.id !== user?.id),
-          server_id: Number(conversationId ?? "0"),
-          user_id: res.data.users.find((u: IUser) => u.id !== user?.id)?.id,
+          serverId: Number(conversationId ?? "0"),
+          userId: res.data.users.find((u: IUser) => u.id !== user?.id)?.id,
           isOnline: false,
           isOwner: false,
         };
@@ -106,7 +106,7 @@ function Members({
     socket.on("previousOnlineUsers", (data: IncomingMemberType[]) => {
       setMembers((prev) =>
         prev.map((user) => {
-          const found = data.find((u) => u.user_id === user.user_id);
+          const found = data.find((u) => u.userId === user.userId);
           return found ? { ...user, isOnline: true } : user;
         })
       );
@@ -115,7 +115,7 @@ function Members({
     socket.on("userGotOffline", (data) => {
       setMembers((prev) =>
         prev.map((user) => {
-          if (user.user_id === data.userId) {
+          if (user.userId === data.userId) {
             return {
               ...user,
               isOnline: false,
@@ -128,12 +128,12 @@ function Members({
 
     socket.on("userGotOnline", (data: IncomingMemberType) => {
       if (
-        data.server_id.toString() === serverId ||
-        data.server_id.toString() === conversationId
+        data.serverId.toString() === serverId ||
+        data.serverId.toString() === conversationId
       ) {
         setMembers((prev) => [
           ...prev.map((user) => {
-            if (user.user_id !== data.user_id) {
+            if (user.userId !== data.userId) {
               return user;
             } else {
               return {
@@ -149,7 +149,7 @@ function Members({
     socket.on("userGotOfflineDM", (data: IncomingMemberType) => {
       setMembers((prev) =>
         prev.map((user) => {
-          if (user.user_id !== data.user_id) {
+          if (user.userId !== data.userId) {
             return user;
           } else {
             return {
@@ -162,11 +162,11 @@ function Members({
     });
 
     socket.on("userGotOnlineDM", (data: IncomingMemberType) => {
-      if (data.user_id === user?.id) return; // Ignore own online status
-      if (data.server_id.toString() === conversationId) {
+      if (data.userId === user?.id) return; // Ignore own online status
+      if (data.serverId.toString() === conversationId) {
         setMembers((prev) =>
           prev.map((user) => {
-            if (user.user_id === data.user_id) {
+            if (user.userId === data.userId) {
               return {
                 ...user,
                 isOnline: true,
@@ -179,7 +179,7 @@ function Members({
     });
 
     socket.on("userKicked", (data) => {
-      setMembers((prev) => prev.filter((user) => user.user_id !== data.userId));
+      setMembers((prev) => prev.filter((user) => user.userId !== data.userId));
       if (data.userId === user?.id) navigate("/");
     });
 
@@ -230,7 +230,7 @@ function Members({
       ) : members.length > 0 ? (
         <MemberList setMembers={setMembers} members={members} />
       ) : (
-        <div className="h-40 flex justify-center items-center text-zinc-400 text-sm">
+        <div className="h-40 flex justify-center items-center text-zinc-400 ">
           No users online
         </div>
       )}
@@ -252,7 +252,7 @@ function MemberList({
 
   const user = useUserStore((s) => s.user);
   const isOwner =
-    user?.id !== undefined && owners.some((o) => o.user_id === user.id);
+    user?.id !== undefined && owners.some((o) => o.userId === user.id);
 
   return (
     <div>
@@ -266,7 +266,7 @@ function MemberList({
             <UserCard
               setMembers={setMembers}
               isOwner={false}
-              key={user.user_id}
+              key={user.userId}
               user={user}
             />
           ))}
@@ -283,7 +283,7 @@ function MemberList({
             <UserCard
               setMembers={setMembers}
               isOwner={isOwner}
-              key={user.user_id}
+              key={user.userId}
               user={user}
             />
           ))}
@@ -300,7 +300,7 @@ function MemberList({
             <UserCard
               setMembers={setMembers}
               isOwner={isOwner}
-              key={user.user_id}
+              key={user.userId}
               user={user}
             />
           ))}
@@ -341,7 +341,7 @@ const UserCard = ({
     try {
       if (!serverId) return;
       const res = await axios.delete(
-        `${env.SERVER_ENDPOINT}/servers/${serverId}/members/${user.user_id}/kick`,
+        `${env.SERVER_ENDPOINT}/servers/${serverId}/members/${user.userId}/kick`,
         { withCredentials: true }
       );
       if (res.status !== 200) {
@@ -349,10 +349,10 @@ const UserCard = ({
         return;
       }
 
-      socket.emit("userKicked", { userId: user.user_id, serverId });
+      socket.emit("userKicked", { userId: user.userId, serverId });
 
       toast.success(`Successfully kicked ${user.user.username}`);
-      setMembers((prev) => prev.filter((m) => m.user_id !== user.user_id));
+      setMembers((prev) => prev.filter((m) => m.userId !== user.userId));
     } catch (error) {
       console.log(error);
     }
@@ -360,7 +360,7 @@ const UserCard = ({
 
   return (
     <div
-      key={user.user_id}
+      key={user.userId}
       className="px-4 py-2 group flex justify-start space-x-2.5"
     >
       <div className="relative aspect-square z-10 font-semibold bg-zinc-900 rounded-full w-8 h-8 flex items-center justify-center">
@@ -370,7 +370,7 @@ const UserCard = ({
         )}
       </div>
       <div className="w-full h-8 flex items-center">
-        <p>{user.user.display_name}</p>
+        <p>{user.user.displayName}</p>
       </div>
       {isOwner && (
         <DropdownMenu>
@@ -387,7 +387,7 @@ const UserCard = ({
               className="text-zinc-100 flex justify-start items-center space-x-1"
             >
               <IoMdExit className="text-zinc-300" />
-              <span className="text-sm font-semibold text-zinc-300">Kick</span>
+              <span className=" font-semibold text-zinc-300">Kick</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

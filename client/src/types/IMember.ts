@@ -1,10 +1,10 @@
 export interface IncomingMemberType {
-  user_id: number;
-  server_id: number;
+  userId: number;
+  serverId: number;
   user: {
     username: string;
-    display_name: string;
-    accent_color: string;
+    displayName: string;
+    accentColor: string;
   };
   isOnline?: boolean;
   isOwner?: boolean;

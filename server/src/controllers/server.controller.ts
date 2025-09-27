@@ -1,23 +1,17 @@
 import { Request, Response } from "express";
 import { ApiError } from "../utils/ApiError";
 import handleError from "../utils/HandleError";
-import Channel from "../models/channel.model";
-import Member from "../models/members.model";
-import Message from "../models/message.model";
-import Server from "../models/server.model";
-import { Op } from "sequelize";
-import User from "../models/user.model";
+import prisma from "../db/db";
 
 export const createServer = async (req: Request, res: Response) => {
   try {
     if (!req.user) throw new ApiError(400, "Unauthorized");
-    const owner_id = req.user.id;
+    const ownerId = req.user.id;
     const { name } = req.body;
     if (!name) throw new ApiError(400, "Server name is required");
 
-    const server = await Server.create({
-      name,
-      owner_id,
+    const server = await prisma.server.create({
+      data: { name, ownerId },
     });
 
     if (!server) {
@@ -39,30 +33,46 @@ export const createServer = async (req: Request, res: Response) => {
 export const joinServer = async (req: Request, res: Response) => {
   try {
     if (!req.user) throw new ApiError(400, "Unauthorized");
-    const { server_id } = req.body;
-    const user_id = req.user.id;
-    if (!server_id) throw new ApiError(400, "Server ID is required");
+    const { serverId } = req.body;
+    const userId = req.user.id;
+    if (!serverId) throw new ApiError(400, "Server ID is required");
 
-    const server = await Server.findOne({
+    const server = await prisma.server.findFirst({
       where: {
-        owner_id: user_id,
-        id: server_id,
+        ownerId: userId,
+        id: Number(serverId),
       },
     });
 
     if (server) throw new ApiError(400, "User can't join his own server");
 
-    const serverMembers = await Member.findOrCreate({
+    const serverMembers = await prisma.member.findFirst({
       where: {
-        user_id,
-        server_id,
+        userId,
+        serverId: Number(serverId),
       },
     });
 
-    if (!serverMembers) {
+    if (serverMembers) {
+      res.status(200).json({
+        message: "User already joined this server",
+        data: serverMembers,
+      });
+      return;
+    }
+
+    const joinedServer = await prisma.member.create({
+      data: {
+        userId,
+        serverId: Number(serverId),
+      },
+    });
+
+    if (!joinedServer) {
       res.status(400).json({ error: "Failed to join server" });
       return;
     }
+    console.log(joinedServer);
 
     res.status(200).json({
       message: "User joined the server successfully!",
@@ -79,14 +89,14 @@ export const getServerDetailsById = async (req: Request, res: Response) => {
 
     if (!serverId) throw new ApiError(400, "Server Id is required");
 
-    const server = await Server.findOne({
-      where: { id: serverId },
+    const server = await prisma.server.findUnique({
+      where: { id: Number(serverId) },
     });
 
     if (!server) throw new ApiError(400, "Server not found");
 
     return res.status(200).json({
-      server: server.dataValues,
+      server,
       message: "Server fetched successfully",
     });
   } catch (error) {
@@ -102,14 +112,14 @@ export const getServerDetailsById = async (req: Request, res: Response) => {
 export const leaveServer = async (req: Request, res: Response) => {
   if (!req.user) throw new ApiError(400, "Unauthorized");
   const { serverId } = req.params;
-  const user_id = req.user.id;
+  const userId = req.user.id;
   if (!serverId) throw new ApiError(400, "Server ID is required");
 
   try {
-    const serverMembers = await Member.destroy({
+    const serverMembers = await prisma.member.deleteMany({
       where: {
-        user_id: user_id,
-        server_id: serverId,
+        userId,
+        serverId: Number(serverId),
       },
     });
 
@@ -138,26 +148,29 @@ export const getJoinedServer = async (req: Request, res: Response) => {
     const userId = req.user.id;
 
     const [ownerServers, memberServers] = await Promise.all([
-      Server.findAll({
+      prisma.server.findMany({
         where: {
-          owner_id: userId,
+          ownerId: userId,
         },
       }),
-      Member.findAll({
+      prisma.member.findMany({
         where: {
-          user_id: userId,
+          userId: Number(userId),
         },
         include: {
-          model: Server,
-          attributes: ["name"],
+          server: {
+            select: {
+              name: true,
+            },
+          },
         },
       }),
     ]);
 
     const flattenedMemberServers = memberServers.map((member) => ({
-      ...member.dataValues,
-      name: member.dataValues.server.name,
-      id: member.dataValues.server_id,
+      ...member,
+      name: member.server.name,
+      id: member.serverId,
       server: undefined,
     }));
 
@@ -181,48 +194,44 @@ export const deleteServer = async (req: Request, res: Response) => {
 
     if (!serverId) throw new ApiError(400, "Server Id is required");
 
-    const channels = await Channel.findAll({
+    const channels = await prisma.channel.findMany({
       where: {
-        server_id: serverId,
+        serverId: Number(serverId),
       },
     });
 
-    const channelIds = channels.map((c) => c.dataValues.id);
+    const channelIds = channels.map((c) => c.id);
 
-    await Message.destroy({
+    await prisma.message.deleteMany({
       where: {
-        channel_id: { [Op.in]: channelIds },
+        channelId: { in: channelIds },
       },
     });
 
-    await Member.destroy({
+    await prisma.member.deleteMany({
       where: {
-        server_id: serverId,
+        serverId: Number(serverId),
       },
     });
 
-    await Channel.destroy({
+    await prisma.channel.deleteMany({
       where: {
-        server_id: serverId,
+        serverId: Number(serverId),
       },
     });
 
     if (channelIds.length > 0) {
-      await Message.destroy({
+      await prisma.message.deleteMany({
         where: {
-          channel_id: { [Op.in]: channelIds },
+          channelId: { in: channelIds },
         },
       });
     }
 
-    await Member.destroy({
+    const server = await prisma.server.delete({
       where: {
-        id: serverId,
+        id: Number(serverId),
       },
-    });
-
-    const server = await Server.destroy({
-      where: { id: serverId },
     });
 
     if (!server) throw new ApiError(400, "Server Id is invalid");
@@ -248,7 +257,10 @@ export const updateServer = async (req: Request, res: Response) => {
 
     const { name } = req.body;
 
-    const server = await Server.update({ name }, { where: { id: serverId } });
+    const server = await prisma.server.update({
+      data: { name },
+      where: { id: Number(serverId) },
+    });
 
     return res.status(200).json({
       message: "Server updated successfully",
@@ -270,39 +282,55 @@ export const getMembersByServer = async (req: Request, res: Response) => {
 
     if (!serverId) throw new ApiError(400, "Server Id is required");
 
-    const server = await Server.findOne({
+    const server = await prisma.server.findUnique({
       where: {
-        id: serverId,
+        id: Number(serverId),
       },
     });
 
     if (!server) throw new ApiError(404, "Server not found");
 
     const [members, owner] = await Promise.all([
-      Member.findAll({
+      prisma.member.findMany({
         where: {
-          server_id: serverId,
+          serverId: Number(serverId),
         },
         include: {
-          model: User,
-          attributes: ["username", "display_name", "accent_color"],
+          user: {
+            select: {
+              username: true,
+              displayName: true,
+              accentColor: true,
+            },
+          },
         },
       }),
-      User.findOne({
+      prisma.user.findUnique({
         where: {
-          id: server.dataValues.owner_id,
+          id: server.ownerId,
         },
-        attributes: ["username", "display_name", "accent_color"],
+        select: {
+          username: true,
+          displayName: true,
+          accentColor: true,
+        },
       }),
     ]);
 
     return res.status(200).json({
       message: "Members fetched successfully",
-      members: members.map((m) => m.dataValues),
+      members: members.map((m) => ({
+        ...m,
+        user: {
+          username: m.user.username,
+          displayName: m.user.displayName,
+          accentColor: m.user.accentColor,
+        },
+      })),
       owner: {
         server_id: serverId,
-        user_id: server.dataValues.owner_id,
-        user: owner?.dataValues,
+        user_id: server.ownerId,
+        user: owner,
       },
     });
   } catch (error) {
@@ -319,18 +347,28 @@ export const kickMember = async (req: Request, res: Response) => {
   try {
     const { userId, serverId } = req.params;
 
-    if (!userId || !serverId) throw new ApiError(400, "User ID and Server ID are required");
+    if (!userId || !serverId)
+      throw new ApiError(400, "User ID and Server ID are required");
 
-    const member = await Member.findOne({
+    const member = await prisma.member.findUnique({
       where: {
-        user_id: userId,
-        server_id: serverId,
+        userId_serverId: {
+          userId: Number(userId),
+          serverId: Number(serverId),
+        },
       },
     });
 
     if (!member) throw new ApiError(404, "Member not found");
 
-    await member.destroy();
+    await prisma.member.delete({
+      where: {
+        userId_serverId: {
+          userId: Number(userId),
+          serverId: Number(serverId),
+        },
+      },
+    });
 
     return res.status(200).json({
       message: "User left the server successfully",
@@ -343,4 +381,4 @@ export const kickMember = async (req: Request, res: Response) => {
       "LEAVE_SERVER"
     );
   }
-}
+};

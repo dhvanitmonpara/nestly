@@ -24,8 +24,8 @@ type MessageCardProps<T> = {
   setChannel: React.Dispatch<React.SetStateAction<T | null>>;
   id: string;
   username: string;
-  display_name: string;
-  accent_color: string;
+  displayName: string;
+  accentColor: string;
   content: string;
   createdAt: string | null;
   continuesMessage?: boolean;
@@ -34,14 +34,14 @@ type MessageCardProps<T> = {
 function MessageCard<T extends IChannel | IConversation>({
   id,
   username,
-  display_name,
-  accent_color,
+  displayName,
+  accentColor,
   content,
   createdAt,
   continuesMessage = false,
   setChannel,
 }: MessageCardProps<T>) {
-  const color = `#${accent_color}`;
+  const color = `#${accentColor}`;
   const user = useUserStore((s) => s.user);
   return (
     <div
@@ -56,7 +56,7 @@ function MessageCard<T extends IChannel | IConversation>({
         </div>
       ) : (
         <div
-          className="flex justify-center items-center bg-zinc-800 h-8 w-8 rounded-full font-semibold text-sm"
+          className="flex justify-center items-center bg-zinc-800 h-8 w-8 rounded-full font-semibold "
           style={{ color }}
         >
           {username.slice(0, 2)}
@@ -64,14 +64,14 @@ function MessageCard<T extends IChannel | IConversation>({
       )}
       <div className="w-full">
         {!continuesMessage && (
-          <div className={`text-sm flex justify-start items-center space-x-2`}>
+          <div className={` flex justify-start items-center space-x-2`}>
             <span
               className="text-xs"
               style={{
                 color: color,
               }}
             >
-              {display_name || username || "Unknown"}
+              {displayName || username || "Unknown"}
             </span>
             <div className="space-x-3 flex items-center justify-between w-full">
               <span className="text-[0.70rem] text-zinc-500">
@@ -87,7 +87,7 @@ function MessageCard<T extends IChannel | IConversation>({
             </div>
           </div>
         )}
-        <div className="text-zinc-200 text-sm flex justify-between">
+        <div className="text-zinc-200  flex justify-between">
           <span>{content}</span>
           {continuesMessage && user?.username === username && (
             <MessageForm id={id} setChannel={setChannel} content={content} />

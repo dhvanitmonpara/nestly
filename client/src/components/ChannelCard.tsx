@@ -138,7 +138,7 @@ function ChannelCard({
           </div>
         </div>
       ) : (
-        <div className="flex justify-center items-center text-zinc-300 font-semibold text-sm space-x-2">
+        <div className="flex justify-center items-center text-zinc-300 font-semibold space-x-2">
           {type === "text" ? <IoChatbubbleSharp /> : <FaVoicemail />}
           <span>{name}</span>
         </div>
@@ -161,7 +161,7 @@ function ChannelCard({
                 className="text-zinc-100 flex justify-start items-center space-x-1"
               >
                 <MdEdit className="text-zinc-300" />
-                <span className="text-sm font-semibold text-zinc-300">
+                <span className=" font-semibold text-zinc-300">
                   Edit
                 </span>
               </DropdownMenuItem>
@@ -171,12 +171,12 @@ function ChannelCard({
                 className="text-zinc-300 flex justify-start items-center space-x-1"
               >
                 <MdDelete />
-                <span className="text-sm font-semibold">Delete</span>
+                <span className=" font-semibold">Delete</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           {Boolean(roomParticipantsCount) && (
-            <span className="px-3 text-sm inline-block rounded-xl bg-zinc-700">
+            <span className="px-3  inline-block rounded-xl bg-zinc-700">
               {roomParticipantsCount}
             </span>
           )}

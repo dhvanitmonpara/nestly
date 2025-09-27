@@ -3,7 +3,7 @@ import { ApiError } from "../utils/ApiError";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import handleError from "../utils/HandleError";
 import { env } from "../conf/env";
-import User from "../models/user.model";
+import prisma from "../db/db";
 
 const verifyUserJWT = async (
   req: Request,
@@ -19,26 +19,37 @@ const verifyUserJWT = async (
       throw new ApiError(401, "Unauthorized");
     }
 
-    const decodedToken = jwt.verify(token, env.ACCESS_TOKEN_SECRET) as JwtPayload;
+    const decodedToken = jwt.verify(
+      token,
+      env.ACCESS_TOKEN_SECRET
+    ) as JwtPayload;
 
     if (!decodedToken || typeof decodedToken == "string") {
       throw new ApiError(401, "Invalid Access Token", "INVALID_ACCESS_TOKEN");
     }
 
-    const user = await User.findByPk(decodedToken.id)
+    const user = await prisma.user.findUnique({
+      where: {
+        id: decodedToken.id,
+      },
+    });
 
     if (!user) {
       throw new ApiError(401, "Invalid Access Token");
     }
 
-    if (!user.dataValues.refresh_token) {
-      throw new ApiError(401, "Refresh token session is not valid", "INVALID_SESSION");
+    if (!user.refreshToken) {
+      throw new ApiError(
+        401,
+        "Refresh token session is not valid",
+        "INVALID_SESSION"
+      );
     }
 
     const mappedUser = {
-      ...user.dataValues,
+      ...user,
       password: null,
-      refresh_token: null,
+      refreshToken: null,
     };
 
     req.user = mappedUser;
@@ -48,6 +59,4 @@ const verifyUserJWT = async (
   }
 };
 
-export {
-  verifyUserJWT,
-};
+export { verifyUserJWT };

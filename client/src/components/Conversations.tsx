@@ -68,15 +68,15 @@ function Conversations() {
           <Conversation
             key={c.id}
             id={c.id}
-            accent_color={
+            accentColor={
               c.user_id1 === user?.id
-                ? c.user2.accent_color
-                : c.user1.accent_color
+                ? c.user2.accentColor
+                : c.user1.accentColor
             }
             name={
               c.user_id1 === user?.id
-                ? c.user2.display_name
-                : c.user1.display_name
+                ? c.user2.displayName
+                : c.user1.displayName
             }
             setConversation={setConversations}
           />
@@ -97,7 +97,7 @@ const CreateConversationButton = ({
   const navigate = useNavigate();
 
   const handleSubmit = async (u: IUser) => {
-    const toastId = toast.loading(`Creating a new chat with ${u.display_name}`);
+    const toastId = toast.loading(`Creating a new chat with ${u.displayName}`);
     try {
       const res = await axios.post(
         `${env.SERVER_ENDPOINT}/dms/create`,
@@ -111,7 +111,7 @@ const CreateConversationButton = ({
       }
 
       toast.success(
-        `Successfully created a conversation with ${u.display_name}`
+        `Successfully created a conversation with ${u.displayName}`
       );
       setConversations((prev) => [...prev, res.data.conversation]);
       navigate(`/dm/${res.data.conversation.id}`);
@@ -126,11 +126,11 @@ const CreateConversationButton = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
-        className="text-sm flex justify-start items-center space-x-2 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-700/50 rounded-md px-3 py-2 w-full cursor-pointer"
+        className=" flex justify-start items-center space-x-2 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-700/50 rounded-md px-3 py-2 w-full cursor-pointer"
         onClick={() => setOpen(true)}
       >
         <FiPlus />
-        <span className="font-semibold">Start a Conversation</span>
+        <span className="font-semibold text-sm">Start a Conversation</span>
       </DialogTrigger>
       <DialogContent className="bg-zinc-900 text-zinc-100 border-zinc-800 !max-w-96">
         <DialogHeader>
@@ -205,14 +205,14 @@ const SearchUserForm = ({
               className="hover:bg-zinc-800/40 transition-colors px-2 py-1.5 rounded-md w-full text-left space-x-2 flex justify-start items-center text-zinc-300 hover:text-zinc-100"
             >
               <div
-                className="text-sm font-medium h-10 w-10 flex justify-center items-center rounded-full bg-zinc-800 border border-zinc-900"
-                style={{ color: `#${r.accent_color}` }}
+                className=" font-medium h-10 w-10 flex justify-center items-center rounded-full bg-zinc-800 border border-zinc-900"
+                style={{ color: `#${r.accentColor}` }}
               >
                 {r.username.slice(0, 2)}
               </div>
               <div>
                 <p>{r.username}</p>
-                <p className="text-sm text-zinc-400">{r.email}</p>
+                <p className=" text-zinc-400">{r.email}</p>
               </div>
             </button>
           ))

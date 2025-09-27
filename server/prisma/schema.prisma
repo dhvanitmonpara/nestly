@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  directUrl    = env("DIRECT_URL")
+  relationMode = "prisma"
+}
+
+model User {
+  id                   Int                  @id @default(autoincrement())
+  username             String
+  email                String
+  password             String?
+  accentColor          String               @default("6a7282")
+  authType             AuthType
+  displayName          String
+  refreshToken         String?
+  directConversations1 DirectConversation[] @relation("DM_User1")
+  directConversations2 DirectConversation[] @relation("DM_User2")
+  directMessagesSent   DirectMessage[]      @relation("DM_Sender")
+  memberships          Member[]
+  messages             Message[]
+  serversOwned         Server[]             @relation("ServerOwner")
+}
+
+model Server {
+  id       Int       @id @default(autoincrement())
+  name     String
+  ownerId  Int
+  channels Channel[]
+  members  Member[]
+  owner    User      @relation("ServerOwner", fields: [ownerId], references: [id])
+}
+
+model Channel {
+  id       Int       @id @default(autoincrement())
+  name     String
+  serverId Int
+  type     String
+  server   Server    @relation(fields: [serverId], references: [id])
+  messages Message[]
+}
+
+model Message {
+  id        Int     @id @default(autoincrement())
+  content   String
+  userId    Int
+  channelId Int
+  channel   Channel @relation(fields: [channelId], references: [id])
+  user      User    @relation(fields: [userId], references: [id])
+}
+
+model Member {
+  id       Int    @id @default(autoincrement())
+  userId   Int
+  serverId Int
+  server   Server @relation(fields: [serverId], references: [id])
+  user     User   @relation(fields: [userId], references: [id])
+
+  @@unique([userId, serverId])
+}
+
+model DirectConversation {
+  id       Int             @id @default(autoincrement())
+  userId1  Int
+  userId2  Int
+  user1    User            @relation("DM_User1", fields: [userId1], references: [id])
+  user2    User            @relation("DM_User2", fields: [userId2], references: [id])
+  messages DirectMessage[]
+}
+
+model DirectMessage {
+  id             Int                @id @default(autoincrement())
+  conversationId Int
+  senderId       Int
+  content        String
+  conversation   DirectConversation @relation(fields: [conversationId], references: [id])
+  sender         User               @relation("DM_Sender", fields: [senderId], references: [id])
+}
+
+enum AuthType {
+  oauth
+  manual
+}

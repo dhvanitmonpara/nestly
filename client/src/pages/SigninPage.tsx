@@ -70,7 +70,7 @@ function SigninPage() {
           Sign In
         </button>
         {errors.root?.message && (
-          <span className="text-sm text-red-500">{errors.root.message}</span>
+          <span className=" text-red-500">{errors.root.message}</span>
         )}
       </form>
       <p className="flex justify-center items-center my-3 text-xs">
@@ -86,7 +86,7 @@ function SigninPage() {
           <span>Login with Google</span>
         </button>
       </form>
-      <p className="text-center text-sm pt-3">
+      <p className="text-center  pt-3">
         Don't have an account?{" "}
         <Link className="text-blue-500 hover:underline" to="/auth/signup">
           Sign up

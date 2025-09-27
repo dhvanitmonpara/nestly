@@ -60,7 +60,6 @@ function ChatPage() {
     const handleMessage = (data: IMessage) => {
       if (!channelId) return;
 
-      console.log("Received message:", data);
       const newMessage: IMessage = {
         id: Date.now().toString(),
         content: data.content,
@@ -165,17 +164,17 @@ function ChatPage() {
                         key={chat.id}
                         continuesMessage={!isFirstFromUser}
                         id={chat.id}
-                        accent_color={chat.user?.accent_color}
+                        accentColor={chat.user?.accentColor}
                         content={chat.content}
                         createdAt={chat?.createdAt ?? null}
                         username={chat.user?.username}
                         setChannel={setChannel}
-                        display_name={chat?.user.display_name}
+                        displayName={chat?.user.displayName}
                       />
                     );
                   })
                 ) : (
-                  <div className="text-zinc-400 text-sm px-6 pt-3 border-t border-zinc-800 h-40">
+                  <div className="text-zinc-400  px-6 pt-3 border-t border-zinc-800 h-40">
                     <h4>No messages yet</h4>
                   </div>
                 )}
@@ -185,9 +184,9 @@ function ChatPage() {
           <SendMessage<IChannel>
             setChannel={setChannel}
             lastMessage={
-              channel?.messages[channel.messages.length - 1].user.username !==
+              channel?.messages[channel.messages.length - 1]?.user.username !==
               user?.username
-                ? channel?.messages[channel.messages.length - 1].content ?? null
+                ? channel?.messages[channel.messages.length - 1]?.content ?? null
                 : null
             }
           />

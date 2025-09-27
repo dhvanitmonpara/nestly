@@ -6,11 +6,10 @@ import sendMail from "../utils/sendMail";
 import handleError from "../utils/HandleError";
 import UserService from "../services/user.service";
 import { env } from "../conf/env";
-import User from "../models/user.model";
 import bcrypt from "bcryptjs";
 import nodeCache from "../services/cache.service";
-import { Op } from "sequelize";
 import axios from "axios";
+import prisma from "../db/db";
 
 const userService = new UserService();
 
@@ -50,16 +49,13 @@ export const googleCallback = async (req: Request, res: Response) => {
 
     const user = userInfoRes.data;
 
-    const existingUser = await User.findOne({
+    const existingUser = await prisma.user.findFirst({
       where: { email: user.email.toLowerCase() },
     });
 
     if (existingUser) {
       const { accessToken, refreshToken } =
-        await userService.generateAccessAndRefreshToken(
-          existingUser.dataValues.id,
-          req
-        );
+        await userService.generateAccessAndRefreshToken(existingUser.id, req);
 
       return res
         .status(200)
@@ -92,23 +88,20 @@ export const handleUserOAuth = async (req: Request, res: Response) => {
     const { email, username } = req.body;
     if (!email) throw new ApiError(400, "Email is required");
 
-    const createdUser = await User.create(
-      {
+    const createdUser = await prisma.user.create({
+      data: {
         email,
         username,
-        display_name: username,
+        displayName: username,
         password: null,
-        auth_type: "oauth"
+        authType: "oauth",
       },
-      {
-        returning: true,
-      }
-    );
+    });
 
     if (!createdUser) throw new ApiError(500, "Failed to create user");
 
     const { accessToken, refreshToken, userAgent, ip } =
-      await userService.generateAccessAndRefreshToken(createdUser.dataValues.id, req);
+      await userService.generateAccessAndRefreshToken(createdUser.id, req);
 
     if (!accessToken || !refreshToken) {
       res
@@ -154,14 +147,14 @@ export const initializeUser = async (req: Request, res: Response) => {
       throw new ApiError(400, "All fields are required");
 
     const existingUser =
-      (await User.findOne({
+      (await prisma.user.findFirst({
         where: { email: email },
       })) ?? null;
 
     if (existingUser)
       throw new ApiError(400, "User with this email already exists");
 
-    const isUsernameUnique = !(await User.findOne({
+    const isUsernameUnique = !(await prisma.user.findFirst({
       where: { username: username },
     }));
 
@@ -212,18 +205,15 @@ export const registerUser = async (req: Request, res: Response) => {
 
     const encryptedPassword = await bcrypt.hash(password, 12);
 
-    const createdUser = await User.create(
-      {
+    const createdUser = await prisma.user.create({
+      data: {
         email,
         password: encryptedPassword,
         username,
-        display_name: username,
-        auth_type: "manual"
+        displayName: username,
+        authType: "manual",
       },
-      {
-        returning: true,
-      }
-    );
+    });
 
     if (!createdUser) {
       res.status(400).json({ error: "Failed to create user" });
@@ -231,10 +221,7 @@ export const registerUser = async (req: Request, res: Response) => {
     }
 
     const { accessToken, refreshToken } =
-      await userService.generateAccessAndRefreshToken(
-        createdUser.dataValues.id.toString(),
-        req
-      );
+      await userService.generateAccessAndRefreshToken(createdUser.id, req);
 
     if (!accessToken || !refreshToken) {
       res
@@ -280,22 +267,18 @@ export const loginUser = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
-    const existingUser = await User.findOne({
+    const existingUser = await prisma.user.findFirst({
       where: { email: email },
     });
 
     if (!existingUser) throw new ApiError(400, "User not found");
-    if (!existingUser.dataValues.password)
-      throw new ApiError(400, "Password not found");
+    if (!existingUser.password) throw new ApiError(400, "Password not found");
 
-    if (!(await bcrypt.compare(password, existingUser.dataValues.password)))
+    if (!(await bcrypt.compare(password, existingUser.password)))
       throw new ApiError(400, "Invalid password");
 
     const { accessToken, refreshToken, userAgent, ip } =
-      await userService.generateAccessAndRefreshToken(
-        existingUser.dataValues.id.toString(),
-        req
-      );
+      await userService.generateAccessAndRefreshToken(existingUser.id, req);
 
     if (!accessToken || !refreshToken) {
       res
@@ -354,7 +337,9 @@ export const getUserById = async (req: Request, res: Response) => {
     const { userId } = req.params;
     if (!userId) throw new ApiError(400, "User Id is required");
 
-    const user = await User.findByPk(userId);
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
 
     if (!user) throw new ApiError(404, "User doesn't exists");
 
@@ -373,19 +358,21 @@ export const logoutUser = async (req: Request, res: Response) => {
       throw new ApiError(400, "User not found");
     }
 
-    const user = await User.findByPk(req.user.id);
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+    });
     if (!user) {
       throw new ApiError(400, "User not found");
     }
 
-    user.dataValues.refresh_token = "";
+    user.refreshToken = "";
 
-    await User.update(
-      {
-        refresh_token: JSON.stringify(user.dataValues.refresh_token),
+    await prisma.user.update({
+      where: { id: req.user.id },
+      data: {
+        refreshToken: JSON.stringify(user.refreshToken),
       },
-      { where: { id: req.user.id } }
-    );
+    });
 
     res
       .status(200)
@@ -414,20 +401,21 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
       throw new ApiError(401, "Invalid Access Token");
     }
 
-    const user = await User.findByPk(decodedToken?.id);
+    const user = await prisma.user.findUnique({
+      where: {
+        id: decodedToken?.id,
+      },
+    });
 
-    if (!user || !user.dataValues.refresh_token)
+    if (!user || !user.refreshToken)
       throw new ApiError(401, "Invalid Refresh Token");
 
-    if (!user.dataValues.refresh_token.includes(incomingRefreshToken)) {
+    if (!user.refreshToken.includes(incomingRefreshToken)) {
       throw new ApiError(401, "Refresh token is invalid or not recognized");
     }
 
     const { accessToken, refreshToken } =
-      await userService.generateAccessAndRefreshToken(
-        user.dataValues.id.toString(),
-        req
-      );
+      await userService.generateAccessAndRefreshToken(user.id, req);
 
     res
       .status(200)
@@ -482,15 +470,17 @@ export const sendOtp = async (req: Request, res: Response) => {
 export const updateUser = async (req: Request, res: Response) => {
   try {
     if (!req.user) throw new ApiError(401, "Unauthorized request");
-    const user = await User.findByPk(req.user.id);
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+    });
     if (!user) throw new ApiError(404, "User not found");
 
-    const { accent_color, display_name } = req.body;
+    const { accentColor, displayName } = req.body;
 
-    const updatedUser = await User.update(
-      { accent_color, display_name },
-      { where: { id: req.user.id } }
-    );
+    const updatedUser = await prisma.user.update({
+      data: { accentColor, displayName },
+      where: { id: req.user.id },
+    });
 
     if (!updatedUser) throw new ApiError(404, "User not found");
 
@@ -554,14 +544,20 @@ export const searchUsers = async (req: Request, res: Response) => {
 
     if (!query) throw new ApiError(400, "Query is required");
 
-    const users = await User.findAll({
+    const users = await prisma.user.findMany({
       where: {
-        [Op.or]: [
-          { username: { [Op.like]: `%${query}%` } },
-          { email: { [Op.like]: `%${query}%` } },
+        OR: [
+          { username: { contains: query, mode: "insensitive" } },
+          { email: { contains: query, mode: "insensitive" } },
         ],
       },
-      attributes: ["id", "username", "email", "accent_color", "display_name"],
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        accentColor: true,
+        displayName: true,
+      },
     });
 
     res

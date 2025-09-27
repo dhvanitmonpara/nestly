@@ -17,8 +17,8 @@ function ColorPicker({
   useEffect(() => {
     setUser((prev: IUser | null) => {
       if (!prev) return null;
-      if (prev.accent_color === debouncedColor) return prev;
-      return { ...prev, accent_color: debouncedColor };
+      if (prev.accentColor === debouncedColor) return prev;
+      return { ...prev, accentColor: debouncedColor };
     });
   }, [debouncedColor, setUser]);
 

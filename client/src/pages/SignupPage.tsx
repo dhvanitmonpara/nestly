@@ -103,7 +103,7 @@ function SignupPage() {
           Sign Up
         </button>
         {errors.root?.message && (
-          <span className="text-sm text-red-500">{errors.root.message}</span>
+          <span className=" text-red-500">{errors.root.message}</span>
         )}
       </form>
       <p className="flex justify-center items-center my-3 text-xs">
@@ -119,7 +119,7 @@ function SignupPage() {
           <span>Sign up with Google</span>
         </button>
       </form>
-      <p className="text-center text-sm pt-3">
+      <p className="text-center  pt-3">
         Already have an account?{" "}
         <Link className="text-blue-500 hover:underline" to="/auth/signin">
           Sign in

@@ -67,7 +67,7 @@ function CreateChannelForm({setChannel}: {setChannel:  React.Dispatch<React.SetS
 
             const res = await axios.post(`${env.SERVER_ENDPOINT}/channels/create`, {
                 name: data.name,
-                server_id: serverId,
+                serverId,
                 type: data.type
             }, { withCredentials: true })
 
@@ -89,7 +89,7 @@ function CreateChannelForm({setChannel}: {setChannel:  React.Dispatch<React.SetS
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger className="text-sm flex justify-start items-center space-x-2 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-700/50 rounded-md px-3 py-2 w-full cursor-pointer" onClick={() => setOpen(true)}>
+            <DialogTrigger className=" flex justify-start items-center space-x-2 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-700/50 rounded-md px-3 py-2 w-full cursor-pointer" onClick={() => setOpen(true)}>
                 <FiPlus />
                 <span className="font-semibold">
                     Create Channel

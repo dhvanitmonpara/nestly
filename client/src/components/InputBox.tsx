@@ -40,7 +40,7 @@ function InputBox({
           {isHidden ? <FaEyeSlash /> : <FaEye />}
         </button>
       )}
-      {error && <span className="text-sm text-red-500">{error}</span>}
+      {error && <span className=" text-red-500">{error}</span>}
     </div>
   );
 }

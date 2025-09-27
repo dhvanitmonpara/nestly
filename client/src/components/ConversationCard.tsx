@@ -19,12 +19,12 @@ import useFeatureStore from "../store/featureStore";
 function DirectConversationCard({
   id,
   name,
-  accent_color,
+  accentColor,
   setConversation,
 }: {
   id: number;
   name: string;
-  accent_color: string;
+  accentColor: string;
   setConversation: React.Dispatch<React.SetStateAction<IConversation[]>>;
 }) {
   const [open, setOpen] = useState(false);
@@ -75,12 +75,12 @@ function DirectConversationCard({
         className="py-2 flex justify-start space-x-2 w-full items-center text-zinc-300"
       >
         <div
-          style={{ color: `#${accent_color}` }}
+          style={{ color: `#${accentColor}` }}
           className="font-semibold bg-zinc-900 rounded-full w-7 h-7 text-xs flex items-center justify-center"
         >
           {name.slice(0, 2)}
         </div>
-        <div className="text-sm font-semibold truncate">{name}</div>
+        <div className=" font-semibold truncate">{name}</div>
       </div>
       <div className="space-x-1 flex justify-center items-center">
         <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -97,7 +97,7 @@ function DirectConversationCard({
               className="text-zinc-300 flex justify-start items-center space-x-1"
             >
               <MdDelete />
-              <span className="text-sm font-semibold">Delete</span>
+              <span className=" font-semibold">Delete</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
