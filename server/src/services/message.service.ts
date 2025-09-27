@@ -10,7 +10,7 @@ const createMessage = async (content: string, userId: number, channelId: number)
       data: {
         content,
         userId,
-        channelId
+        channelId: Number(channelId)
       }
     })
 

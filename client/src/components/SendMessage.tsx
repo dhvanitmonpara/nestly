@@ -156,7 +156,7 @@ function SendMessage<T extends IChannel | IConversation>({
       )}
       <div className="absolute bottom-0 left-4 w-[calc(100%-30px)] px-1 overflow-hidden">
         <div
-          className={` text-zinc-300 bg-indigo-500 rounded-t-sm mx-3 px-3 py-1 transition-all duration-100 ${typingUsers.length > 0 ? "translate-y-0" : "translate-y-20"
+          className={` text-zinc-200 bg-indigo-500 font-semibold text-sm rounded-t-sm mx-3 px-3 py-1 transition-all duration-100 ${typingUsers.length > 0 ? "translate-y-0" : "translate-y-20"
             }`}
         >
           {typingUsers.length > 0 &&
