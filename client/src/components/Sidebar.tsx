@@ -58,7 +58,7 @@ function Sidebar({ className }: { className?: string }) {
         >
           <span className="inline-block truncate">
             {servers.find((s) => s.id.toString() === serverId)?.name ||
-              (location.includes("/dm") ? "Direct Messages" : "TechyScord")}
+              (location.includes("/dm") ? "Direct Messages" : "Nestly")}
           </span>
           <div className="flex">
             {serverId && (

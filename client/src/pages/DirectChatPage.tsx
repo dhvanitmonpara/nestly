@@ -8,6 +8,8 @@ import MessageCard from "../components/MessageCard";
 import SendMessage from "../components/SendMessage";
 import type { IConversation } from "../types/IConversation";
 import type { IDirectMessage } from "../types/IDirectMessage";
+import ChannelMessagesSkeleton from "../components/ChatSkeleton";
+import { Skeleton } from "../components/ui/skeleton";
 
 function DirectChatPage() {
   const [loading, setLoading] = useState(false);
@@ -148,11 +150,11 @@ function DirectChatPage() {
               <h1 className="w-full h-12 bg-zinc-800 px-4 rounded-md flex justify-start items-center">
                 {conversation?.user_id1 === user?.id
                   ? conversation?.user2?.displayName
-                  : conversation?.user1?.displayName ?? "Loading..."}
+                  : conversation?.user1?.displayName ?? <Skeleton className="w-16 h-5 rounded-md" />}
               </h1>
             </div>
             {loading ? (
-              <h2>Loading...</h2>
+              <ChannelMessagesSkeleton />
             ) : (
               <div className="px-4 pt-10 pb-60">
                 <div className="sm:px-6 pb-4 text-lg font-semibold text-zinc-200">
@@ -213,6 +215,7 @@ function DirectChatPage() {
           </div>
           {conversation?.messages && (
             <SendMessage<IConversation>
+              disabled={loading}
               lastMessage={
                 conversation.messages[
                   conversation.messages.length - 1

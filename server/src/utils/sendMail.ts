@@ -46,12 +46,12 @@ const sendMail = async (
 
     // Customize the email content based on whether it's an OTP mail
     const subject =
-      type === "OTP" ? "Your OTP Code - Secure Login" : "Welcome to TechyScord!";
+      type === "OTP" ? "Your OTP Code - Secure Login" : "Welcome to Nestly!";
 
     const text =
       type === "OTP"
-        ? `Dear user,\n\nYour OTP code is: ${otpCode}. This code will expire in 1 minute. Please do not share it with anyone for security reasons.\n\nThank you for using TechyScord!\nBest regards,\nThe TechyScord Team`
-        : `Hello,\n\nThank you for choosing TechyScord! We're excited to have you with us.\n\nIf you have any questions, feel free to reach out!\nBest regards,\nThe TechyScord Team`;
+        ? `Dear user,\n\nYour OTP code is: ${otpCode}. This code will expire in 1 minute. Please do not share it with anyone for security reasons.\n\nThank you for using Nestly!\nBest regards,\nThe Nestly Team`
+        : `Hello,\n\nThank you for choosing Nestly! We're excited to have you with us.\n\nIf you have any questions, feel free to reach out!\nBest regards,\nThe Nestly Team`;
 
     let html;
 
@@ -77,21 +77,21 @@ const sendMail = async (
   <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;" />
 
   <p style="font-size: 13px; color: #999;">
-    Thank you for using <strong>TechyScord</strong>!  
+    Thank you for using <strong>Nestly</strong>!  
   </p>
   <p style="font-size: 13px; color: #999;">
-    — The TechyScord Team
+    — The Nestly Team
   </p>
 </div>
 `;
         break;
       case "WELCOME":
         html = `<div style="font-family: Arial, sans-serif; padding: 20px; line-height: 1.6;">
-          <h2 style="color: #4CAF50;">Welcome to TechyScord!</h2>
-          <p>We're excited to have you with us. TechyScord helps you manage and organize your links easily and securely.</p>
+          <h2 style="color: #4CAF50;">Welcome to Nestly!</h2>
+          <p>We're excited to have you with us. Nestly helps you manage and organize your links easily and securely.</p>
           <p>If you have any questions or need assistance, feel free to reach out to us anytime.</p>
           <hr style="border: none; border-top: 1px solid #ccc;" />
-          <p style="color: #888;">Best regards,<br />The TechyScord Team</p>
+          <p style="color: #888;">Best regards,<br />The Nestly Team</p>
         </div>`;
         break;
       case "NEW-DEVICE-LOGIN":
@@ -130,7 +130,7 @@ const sendMail = async (
 
   <p style="color: #888; font-size: 12px;">
     Regards,<br />
-    The <strong>TechyScord</strong> Team
+    The <strong>Nestly</strong> Team
   </p>
 </div>
 `;
@@ -141,7 +141,7 @@ const sendMail = async (
           <p>Dear user,</p>
           <p>Thank you for your valuable feedback. We value your input and will use it to improve our services.</p>
           <hr style="border: none; border-top: 1px solid #ccc;" />
-          <p style="color: #888;">Best regards,<br />The TechyScord Team</p>
+          <p style="color: #888;">Best regards,<br />The Nestly Team</p>
           </div>`;
         break;
       case "FEEDBACK-SENT":
@@ -155,7 +155,7 @@ const sendMail = async (
     }
 
     const info = await transporter.sendMail({
-      from: `"TechyScord" <no-reply@TechyScord.dev>"`,
+      from: `"Nestly" <no-reply@Nestly.dev>"`,
       to: user,
       subject,
       text,

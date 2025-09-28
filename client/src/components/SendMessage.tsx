@@ -12,11 +12,13 @@ import Suggestions from "./Suggestions";
 type SendMessageProps<T> = {
   setChannel: React.Dispatch<React.SetStateAction<T | null>>;
   lastMessage: string | null;
+  disabled?: boolean;
 };
 
 function SendMessage<T extends IChannel | IConversation>({
   setChannel,
   lastMessage,
+  disabled = false,
 }: SendMessageProps<T>) {
   const [message, setMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -170,13 +172,14 @@ function SendMessage<T extends IChannel | IConversation>({
             onChange={handleTyping}
             value={message}
             type="text"
+            disabled={disabled}
             autoFocus
             placeholder="Type a message"
-            className="w-full py-2 px-4 bg-zinc-800 rounded-md"
+            className="w-full py-2 px-4 disabled:opacity-80 disabled:cursor-not-allowed bg-zinc-800 rounded-md"
           />
           <button
             type="submit"
-            className="bg-zinc-700 hover:bg-zinc-600 text-zinc-100 font-semibold px-3 py-2 rounded-md absolute right-0 cursor-pointer"
+            className="bg-zinc-700 hover:bg-zinc-600 text-zinc-100 disabled:opacity-80 disabled:cursor-not-allowed font-semibold px-3 py-2 rounded-md absolute right-0 cursor-pointer"
           >
             Send
           </button>

@@ -20,6 +20,7 @@ import useDebounce from "../hooks/useDebounced";
 import type { IUser } from "../types/IUser";
 import Conversation from "./ConversationCard";
 import { useNavigate } from "react-router-dom";
+import ChannelSkeleton from "./ChannelSkeleton";
 
 function Conversations() {
   const [conversations, setConversations] = useState<IConversation[]>([]);
@@ -57,7 +58,7 @@ function Conversations() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket.socket, user]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <ChannelSkeleton />;
 
   return (
     <div className="space-y-1">

@@ -10,6 +10,7 @@ import useServerStore from "../store/serverStore";
 import { Separator } from "../components/ui/separator";
 import CreateChannelForm from "./CreateChannelForm";
 import useSocket from "../socket/useSocket";
+import ChannelSkeleton from "./ChannelSkeleton";
 
 function Channels() {
   const [channels, setChannels] = useState<IChannel[]>([]);
@@ -24,7 +25,7 @@ function Channels() {
   );
 
   useEffect(() => {
-    if(!socket.socket)return
+    if (!socket.socket) return
     const s = socket.socket;
 
     const fetchChannels = async () => {
@@ -59,11 +60,11 @@ function Channels() {
     fetchChannels();
 
     return () => {
-        s.emit("serverChange", { serverId });
+      s.emit("serverChange", { serverId });
     }
   }, [serverId, socket.socket, user]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <ChannelSkeleton />;
 
   return (
     <div className="space-y-1">

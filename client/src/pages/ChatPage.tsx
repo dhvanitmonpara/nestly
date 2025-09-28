@@ -8,6 +8,8 @@ import type { IMessage } from "../types/IMessage";
 import type { IChannel } from "../types/IChannel";
 import MessageCard from "../components/MessageCard";
 import SendMessage from "../components/SendMessage";
+import { Skeleton } from "../components/ui/skeleton";
+import ChannelMessagesSkeleton from "../components/ChatSkeleton";
 
 function ChatPage() {
   const [channel, setChannel] = useState<IChannel | null>(null);
@@ -104,8 +106,8 @@ function ChatPage() {
             ...prev,
             messages: prev.messages
               ? prev.messages.map((m) =>
-                  m.id === data.messageId ? { ...m, content: data.content } : m
-                )
+                m.id === data.messageId ? { ...m, content: data.content } : m
+              )
               : [],
           } as IChannel;
         });
@@ -135,11 +137,11 @@ function ChatPage() {
           <div className="h-full">
             <div className="sticky flex justify-center items-center pl-[4.5rem] sm:pl-4 top-0 bg-zinc-900 px-4 pt-4">
               <h1 className="w-full h-12 bg-zinc-800 px-4 rounded-md flex justify-start items-center">
-                {channel?.name ?? "Loading..."}
+                {channel?.name ?? <Skeleton className="w-16 h-5 rounded-md" />}
               </h1>
             </div>
             {loading ? (
-              <h2>Loading...</h2>
+              <ChannelMessagesSkeleton />
             ) : (
               <div className="px-4 pt-10 pb-60">
                 <div className="sm:px-6 pb-4 text-lg font-semibold text-zinc-200">
@@ -182,10 +184,11 @@ function ChatPage() {
             )}
           </div>
           <SendMessage<IChannel>
+            disabled={loading}
             setChannel={setChannel}
             lastMessage={
               channel?.messages[channel.messages.length - 1]?.user.username !==
-              user?.username
+                user?.username
                 ? channel?.messages[channel.messages.length - 1]?.content ?? null
                 : null
             }
