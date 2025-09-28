@@ -338,7 +338,7 @@ export const getUserById = async (req: Request, res: Response) => {
     if (!userId) throw new ApiError(400, "User Id is required");
 
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: Number(userId) },
     });
 
     if (!user) throw new ApiError(404, "User doesn't exists");
