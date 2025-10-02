@@ -1,5 +1,5 @@
-import express from "express";
 import { env } from "./conf/env";
+import express from "express";
 import { createDirectMessage, createMessage } from "./services/message.service";
 import { Server, Socket } from "socket.io";
 import cors, { CorsOptions } from "cors";
