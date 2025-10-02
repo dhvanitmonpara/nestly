@@ -51,7 +51,7 @@ function ServerIcon({
           <Link
             to={`/s/${id}`}
             key={id}
-            className={`flex items-center justify-center select-none h-10 w-10 mt-1 transition-all duration-50 font-semibold ${
+            className={`flex items-center justify-center select-none text-lg h-12 w-12 mt-1.5 transition-all duration-50 font-semibold ${
               id.toString() === serverId
                 ? "bg-indigo-500 rounded-xl"
                 : "bg-zinc-700/50 text-zinc-300 rounded-full hover:rounded-xl"

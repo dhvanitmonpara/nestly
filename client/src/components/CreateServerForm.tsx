@@ -68,7 +68,7 @@ function CreateServerForm() {
             } else {
                 navigate(`/join/s/${data.identifier}`)
             }
-            
+
         } catch (error) {
             console.error(error)
             toast.error("Failed to create a server")
@@ -80,8 +80,8 @@ function CreateServerForm() {
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger className="w-10 h-10 mt-1 flex items-center justify-center text-xl cursor-pointer transition-colors duration-300 text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800 rounded-xl">
-                <FiPlus  />
+            <DialogTrigger className="w-12 h-12 mt-1 flex items-center justify-center text-xl cursor-pointer transition-colors duration-300 text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800 rounded-xl">
+                <FiPlus />
             </DialogTrigger>
             <DialogContent className="bg-zinc-900 text-zinc-100 border-zinc-800 !max-w-96">
                 <Tabs value={mode} onValueChange={v => setMode(v as ("create" | "join"))} defaultValue="create">

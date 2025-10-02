@@ -10,6 +10,7 @@ import MessageCard from "../components/MessageCard";
 import SendMessage from "../components/SendMessage";
 import { Skeleton } from "../components/ui/skeleton";
 import ChannelMessagesSkeleton from "../components/ChatSkeleton";
+import { IoChatbubbleSharp } from "react-icons/io5";
 
 function ChatPage() {
   const [channel, setChannel] = useState<IChannel | null>(null);
@@ -136,8 +137,9 @@ function ChatPage() {
         <div className="h-full overflow-y-auto w-full no-scrollbar">
           <div className="h-full">
             <div className="sticky flex justify-center items-center pl-[4.5rem] sm:pl-4 top-0 bg-zinc-900 px-4 pt-4">
-              <h1 className="w-full h-12 bg-zinc-800 px-4 rounded-md flex justify-start items-center">
-                {channel?.name ?? <Skeleton className="w-16 h-5 rounded-md" />}
+              <h1 className="w-full h-12 space-x-2 bg-zinc-800 px-4 rounded-md flex justify-start items-center">
+                {channel?.name ? <IoChatbubbleSharp className="text-zinc-400" /> : <Skeleton className="w-5 h-5 rounded-md" />}
+                <span>{channel?.name ?? <Skeleton className="w-16 h-5 rounded-md" />}</span>
               </h1>
             </div>
             {loading ? (

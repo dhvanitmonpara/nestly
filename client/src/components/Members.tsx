@@ -198,16 +198,18 @@ function Members({
   return (
     <div className={clsx("h-full overflow-y-auto w-96 bg-zinc-800", className)}>
       <div className="p-4 font-semibold flex justify-between">
-        <div className="flex">
-          <span className="text-zinc-300">Members</span>
-          {loading ? (
-            <Skeleton className="bg-zinc-700 rounded-xl w-10 ml-2 tex`t-xs" />
-          ) : (
+        {loading ?
+          <div className="flex">
+            <Skeleton className="bg-zinc-700 rounded-xl w-16 h-5" />
+            <Skeleton className="bg-zinc-700 rounded-xl w-10 h-5 ml-2" />
+          </div>
+          : <div className="flex">
+            <span className="text-zinc-300">Members</span>
             <span className="bg-zinc-900 rounded-xl w-10 ml-2 text-xs flex justify-center items-center">
               {members.length}
             </span>
-          )}
-        </div>
+          </div>
+        }
         <button
           onClick={(e) => {
             e.stopPropagation();

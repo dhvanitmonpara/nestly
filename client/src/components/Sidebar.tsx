@@ -30,7 +30,7 @@ function Sidebar({ className }: { className?: string }) {
         <NavLink
           to="/dm"
           className={({ isActive }) =>
-            `flex items-center justify-center select-none h-10 w-10 mt-1 transition-all duration-50 font-semibold ${
+            `flex items-center justify-center select-none h-12 w-12 mt-1 transition-all duration-50 font-semibold ${
               isActive
                 ? "bg-indigo-500 rounded-xl"
                 : "bg-zinc-700/50 rounded-full text-zinc-300 hover:rounded-xl"
@@ -48,10 +48,10 @@ function Sidebar({ className }: { className?: string }) {
               isOwner={ownerId?.toString() === user?.id.toString()}
             />
           ))}
-        <Separator className="bg-zinc-800 mt-1.5" />
+        <Separator className="bg-zinc-800 mt-2" />
         <CreateChannelForm />
       </section>
-      <div className="w-full min-w-[220px] py-6 px-4 bg-zinc-800/50 relative group">
+      <div className="w-full min-w-[260px] py-6 px-4 bg-zinc-800/50 relative group">
         <Link
           className="text-xl font-semibold flex justify-between items-center"
           to={location.includes("/dm") ? "/dm" : `/s/${serverId}`}
