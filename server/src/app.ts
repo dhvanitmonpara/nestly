@@ -36,7 +36,7 @@ const io = new Server(server, {
 });
 
 const corsOptions: CorsOptions = {
-  origin: env.ACCESS_CONTROL_ORIGIN,
+  origin: env.ACCESS_CONTROL_ORIGIN as string,
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],

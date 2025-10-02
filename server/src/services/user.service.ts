@@ -20,7 +20,7 @@ class UserService {
   constructor() {
     const domain =
       env.ENVIRONMENT === "production"
-        ? (env.ACCESS_CONTROL_ORIGIN as string).replace("https://", ".").trim() || "localhost"
+        ? (env.ACCESS_CONTROL_ORIGIN as string).replace("https://", "").trim() || "localhost"
         : "localhost";
 
     this.options = {
