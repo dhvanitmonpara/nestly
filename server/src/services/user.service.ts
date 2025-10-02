@@ -23,7 +23,7 @@ class UserService {
       secure: env.ENVIRONMENT === "production",
       domain:
         env.ENVIRONMENT === "production"
-          ? env.ACCESS_CONTROL_ORIGIN || "localhost"
+          ? (env.ACCESS_CONTROL_ORIGIN as string) || "localhost"
           : "localhost",
       sameSite:
         env.ENVIRONMENT === "production"
