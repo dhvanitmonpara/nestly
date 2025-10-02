@@ -66,7 +66,7 @@ function MessageCard<T extends IChannel | IConversation>({
         {!continuesMessage && (
           <div className={` flex justify-start items-center space-x-2`}>
             <span
-              className="text-xs"
+              className="text-sm"
               style={{
                 color: color,
               }}
@@ -74,7 +74,7 @@ function MessageCard<T extends IChannel | IConversation>({
               {displayName || username || "Unknown"}
             </span>
             <div className="space-x-3 flex items-center justify-between w-full">
-              <span className="text-[0.70rem] text-zinc-500">
+              <span className="text-xs pt-0.5 text-zinc-500">
                 {createdAt ? formatTimestamp(createdAt) : ""}
               </span>
               {user?.username === username && (
@@ -198,7 +198,7 @@ function MessageForm<T extends IChannel | IConversation>({
     <div className="space-x-3 flex items-center">
       <div className="divide-x divide-zinc-700">
         <Dialog>
-          <DialogTrigger className="text-zinc-500 text-xs hover:text-zinc-300 p-1 rounded-l-md opacity-0 group-hover:opacity-100 transition-all bg-zinc-800 hover:bg-zinc-700 cursor-pointer">
+          <DialogTrigger className="text-zinc-500 hover:text-zinc-300 p-1.5 rounded-l-lg opacity-0 group-hover:opacity-100 transition-all bg-zinc-800 hover:bg-zinc-700 cursor-pointer">
             <MdEdit />
           </DialogTrigger>
           <DialogContent className="bg-zinc-900 text-zinc-100 border-zinc-800 !max-w-96">
@@ -226,7 +226,7 @@ function MessageForm<T extends IChannel | IConversation>({
           </DialogContent>
         </Dialog>
         <Dialog>
-          <DialogTrigger className="text-zinc-500 text-xs hover:text-zinc-300 p-1 rounded-r-md opacity-0 group-hover:opacity-100 transition-all bg-zinc-800 hover:bg-red-500 cursor-pointer">
+          <DialogTrigger className="text-zinc-500 hover:text-zinc-300 p-1.5 rounded-r-lg opacity-0 group-hover:opacity-100 transition-all bg-zinc-800 hover:bg-red-500 cursor-pointer">
             <MdDelete />
           </DialogTrigger>
           <DialogContent className="bg-zinc-900 text-zinc-100 border-zinc-800 !max-w-96">

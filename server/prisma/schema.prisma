@@ -24,61 +24,79 @@ model User {
   memberships          Member[]
   messages             Message[]
   serversOwned         Server[]             @relation("ServerOwner")
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @default(now()) @updatedAt()
 }
 
 model Server {
-  id       Int       @id @default(autoincrement())
-  name     String
-  ownerId  Int
-  channels Channel[]
-  members  Member[]
-  owner    User      @relation("ServerOwner", fields: [ownerId], references: [id])
+  id        Int       @id @default(autoincrement())
+  name      String
+  ownerId   Int
+  channels  Channel[]
+  members   Member[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt()
+
+  owner User @relation("ServerOwner", fields: [ownerId], references: [id])
 }
 
 model Channel {
-  id       Int       @id @default(autoincrement())
-  name     String
-  serverId Int
-  type     String
+  id        Int      @id @default(autoincrement())
+  name      String
+  serverId  Int
+  type      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt()
+
   server   Server    @relation(fields: [serverId], references: [id])
   messages Message[]
 }
 
 model Message {
-  id        Int     @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   content   String
   userId    Int
   channelId Int
-  channel   Channel @relation(fields: [channelId], references: [id])
-  user      User    @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt()
+
+  channel Channel @relation(fields: [channelId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
 }
 
 model Member {
-  id       Int    @id @default(autoincrement())
-  userId   Int
-  serverId Int
-  server   Server @relation(fields: [serverId], references: [id])
-  user     User   @relation(fields: [userId], references: [id])
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  serverId  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt()
+
+  server Server @relation(fields: [serverId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
 
   @@unique([userId, serverId])
 }
 
 model DirectConversation {
-  id       Int             @id @default(autoincrement())
-  userId1  Int
-  userId2  Int
+  id      Int @id @default(autoincrement())
+  userId1 Int
+  userId2 Int
+
   user1    User            @relation("DM_User1", fields: [userId1], references: [id])
   user2    User            @relation("DM_User2", fields: [userId2], references: [id])
   messages DirectMessage[]
 }
 
 model DirectMessage {
-  id             Int                @id @default(autoincrement())
+  id             Int      @id @default(autoincrement())
   conversationId Int
   senderId       Int
   content        String
-  conversation   DirectConversation @relation(fields: [conversationId], references: [id])
-  sender         User               @relation("DM_Sender", fields: [senderId], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @default(now()) @updatedAt()
+
+  conversation DirectConversation @relation(fields: [conversationId], references: [id])
+  sender       User               @relation("DM_Sender", fields: [senderId], references: [id])
 }
 
 enum AuthType {
