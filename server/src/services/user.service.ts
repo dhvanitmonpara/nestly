@@ -18,13 +18,15 @@ class UserService {
     60 * 60 * 1000 * 24 * parseInt(env.REFRESH_TOKEN_EXPIRY || "0"); // In days
 
   constructor() {
+    const domain =
+      env.ENVIRONMENT === "production"
+        ? (env.ACCESS_CONTROL_ORIGIN as string).replace("https://", "").trim() || "localhost"
+        : "localhost";
+
     this.options = {
       httpOnly: true,
       secure: env.ENVIRONMENT === "production",
-      domain:
-        env.ENVIRONMENT === "production"
-          ? (env.ACCESS_CONTROL_ORIGIN as string) || "localhost"
-          : "localhost",
+      domain: domain,
       sameSite:
         env.ENVIRONMENT === "production"
           ? ("none" as "none")

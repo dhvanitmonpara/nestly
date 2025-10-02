@@ -270,26 +270,26 @@ export const loginUser = async (req: Request, res: Response) => {
     const existingUser = await prisma.user.findFirst({
       where: { email: email },
     });
-
+    
     if (!existingUser) throw new ApiError(400, "User not found");
     if (!existingUser.password) throw new ApiError(400, "Password not found");
-
+    
     if (!(await bcrypt.compare(password, existingUser.password)))
       throw new ApiError(400, "Invalid password");
-
+    
     const { accessToken, refreshToken, userAgent, ip } =
-      await userService.generateAccessAndRefreshToken(existingUser.id, req);
-
+    await userService.generateAccessAndRefreshToken(existingUser.id, req);
+    
     if (!accessToken || !refreshToken) {
       res
-        .status(400)
-        .json({ error: "Failed to generate access and refresh token" });
+      .status(400)
+      .json({ error: "Failed to generate access and refresh token" });
       return;
     }
-
+    
     res
-      .status(200)
-      .cookie("__accessToken", accessToken, {
+    .status(200)
+    .cookie("__accessToken", accessToken, {
         ...userService.options,
         maxAge: userService.accessTokenExpiry,
       })
