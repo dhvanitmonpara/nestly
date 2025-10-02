@@ -22,7 +22,12 @@ function SigninPage() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<SigninDataType>();
+  } = useForm<SigninDataType>({
+    defaultValues: {
+      email: "monparadhvanit@gmail.com",
+      password: "123"
+    }
+  });
 
   const onSubmit: SubmitHandler<SigninDataType> = async (
     data: SigninDataType
