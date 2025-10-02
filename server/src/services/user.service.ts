@@ -11,22 +11,17 @@ class UserService {
     httpOnly: boolean;
     secure: boolean;
     sameSite: "none" | "lax";
-    domain: string;
+    domain?: string;
   } = null;
   accessTokenExpiry = 60 * 1000 * parseInt(env.ACCESS_TOKEN_EXPIRY || "0"); // In minutes
   refreshTokenExpiry =
     60 * 60 * 1000 * 24 * parseInt(env.REFRESH_TOKEN_EXPIRY || "0"); // In days
 
   constructor() {
-    const domain =
-      env.ENVIRONMENT === "production"
-        ? (env.ACCESS_CONTROL_ORIGIN as string).replace("https://", "").trim() || "localhost"
-        : "localhost";
-
     this.options = {
       httpOnly: true,
       secure: env.ENVIRONMENT === "production",
-      domain: domain,
+      ...(env.ENVIRONMENT === "production" ? {} : { domain: "localhost" }),
       sameSite:
         env.ENVIRONMENT === "production"
           ? ("none" as "none")
