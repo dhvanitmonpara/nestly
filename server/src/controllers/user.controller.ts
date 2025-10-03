@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { ApiError } from "../utils/ApiError";
 import { hashOTP } from "../utils/cryptographer";
 import jwt from "jsonwebtoken";
-import sendMail from "../utils/sendMail";
 import handleError from "../utils/HandleError";
 import UserService from "../services/user.service";
 import { env } from "../conf/env";
@@ -270,26 +269,26 @@ export const loginUser = async (req: Request, res: Response) => {
     const existingUser = await prisma.user.findFirst({
       where: { email: email },
     });
-    
+
     if (!existingUser) throw new ApiError(400, "User not found");
     if (!existingUser.password) throw new ApiError(400, "Password not found");
-    
+
     if (!(await bcrypt.compare(password, existingUser.password)))
       throw new ApiError(400, "Invalid password");
-    
+
     const { accessToken, refreshToken, userAgent, ip } =
-    await userService.generateAccessAndRefreshToken(existingUser.id, req);
-    
+      await userService.generateAccessAndRefreshToken(existingUser.id, req);
+
     if (!accessToken || !refreshToken) {
       res
-      .status(400)
-      .json({ error: "Failed to generate access and refresh token" });
+        .status(400)
+        .json({ error: "Failed to generate access and refresh token" });
       return;
     }
-    
+
     res
-    .status(200)
-    .cookie("__accessToken", accessToken, {
+      .status(200)
+      .cookie("__accessToken", accessToken, {
         ...userService.options,
         maxAge: userService.accessTokenExpiry,
       })
@@ -443,13 +442,19 @@ export const sendOtp = async (req: Request, res: Response) => {
   if (!email) throw new ApiError(400, "Email is required");
 
   try {
-    const mailResponse = await sendMail(email, "OTP");
+    const mailResponse = await axios.post(
+      "https://simple-smtp-service.vercel.app/api/v1/mail",
+      {
+        to: email,
+        type: "OTP",
+      }
+    );
 
-    if (!mailResponse.success)
-      throw new ApiError(500, mailResponse.error || "Failed to send OTP");
-    if (!mailResponse.otpCode) throw new ApiError(500, "Failed to send OTP");
+    if (!mailResponse.data.success)
+      throw new ApiError(500,"Failed to send OTP");
+    if (!mailResponse.data.details.otp) throw new ApiError(500, "Failed to send OTP");
 
-    const hashedOTP = await hashOTP(mailResponse.otpCode);
+    const hashedOTP = await hashOTP(mailResponse.data.details.otp);
 
     const cacheSuccess = nodeCache.set(`otp:${email}`, hashedOTP, 65);
 
@@ -459,7 +464,7 @@ export const sendOtp = async (req: Request, res: Response) => {
     }
 
     res.status(200).json({
-      messageId: mailResponse.messageId,
+      messageId: mailResponse.data.messageId,
       message: "OTP sent successfully",
     });
   } catch (error) {
