@@ -450,9 +450,10 @@ export const sendOtp = async (req: Request, res: Response) => {
       }
     );
 
-    if (!mailResponse.data.success)
-      throw new ApiError(500,"Failed to send OTP");
-    if (!mailResponse.data.details.otp) throw new ApiError(500, "Failed to send OTP");
+    if (!mailResponse.data.data.success)
+      throw new ApiError(500, "Failed to send OTP");
+    if (!mailResponse.data.data.details.otp)
+      throw new ApiError(500, "Failed to send OTP");
 
     const hashedOTP = await hashOTP(mailResponse.data.details.otp);
 

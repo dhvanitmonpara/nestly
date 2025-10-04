@@ -71,7 +71,7 @@ const OtpInput: React.FC<Props> = ({ length = 4, onChange }) => {
             fontSize: '1.5rem',
             textAlign: 'center',
           }}
-          className="bg-zinc-700/70 text-zinc-200 border border-zinc-600 rounded-md"
+          className="bg-zinc-700/70 text-zinc-200 border border-zinc-600 text-sm rounded-md"
         />
       ))}
     </div>
