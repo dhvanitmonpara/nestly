@@ -452,10 +452,11 @@ export const sendOtp = async (req: Request, res: Response) => {
 
     if (!mailResponse.data.data.success)
       throw new ApiError(500, "Failed to send OTP");
-    if (!mailResponse.data.data.details.otp)
+    const otp = mailResponse.data.data.details.otp;
+    if (!otp)
       throw new ApiError(500, "Failed to send OTP");
 
-    const hashedOTP = await hashOTP(mailResponse.data.details.otp);
+    const hashedOTP = await hashOTP(otp);
 
     const cacheSuccess = nodeCache.set(`otp:${email}`, hashedOTP, 65);
 
@@ -465,7 +466,7 @@ export const sendOtp = async (req: Request, res: Response) => {
     }
 
     res.status(200).json({
-      messageId: mailResponse.data.messageId,
+      messageId: mailResponse.data.data.messageId,
       message: "OTP sent successfully",
     });
   } catch (error) {
