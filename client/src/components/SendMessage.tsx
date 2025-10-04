@@ -58,15 +58,15 @@ function SendMessage<T extends IChannel | IConversation>({
       newMessage = {
         id: Date.now().toString(),
         content: msg ?? message,
-        conversation_id: conversationId,
-        sender_id: user.id,
+        conversationId,
+        senderId: user.id,
         createdAt: new Date().toISOString(),
       };
     } else if (channelId) {
       newMessage = {
         id: Date.now().toString(),
         content: msg ?? message,
-        channel_id: channelId,
+        channelId,
         createdAt: new Date().toISOString(),
         user: {
           id: user.id,

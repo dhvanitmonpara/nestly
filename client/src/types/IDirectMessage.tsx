@@ -1,8 +1,8 @@
 interface IDirectMessage {
   id: string;
   content: string;
-  conversation_id: string;
-  sender_id: number;
+  conversationId: string;
+  senderId: number;
   createdAt?: string;
   updatedAt?: string;
 }

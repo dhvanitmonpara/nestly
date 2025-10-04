@@ -24,14 +24,14 @@ const createMessage = async (content: string, userId: number, channelId: number)
   }
 };
 
-const createDirectMessage = async (content: string, sender_id: string, conversation_id: string) => {
+const createDirectMessage = async (content: string, senderId: string, conversation_id: string) => {
   try {
     if (!content) throw new ApiError(400, "Message is required")
     const message = await prisma.directMessage.create({
       data: {
         content,
         conversationId: Number(conversation_id),
-        senderId: Number(sender_id)
+        senderId: Number(senderId)
       }
     })
 

@@ -2,8 +2,8 @@ import type { IUser } from "./IUser"
 
 interface IMessage {
     id: string
-    channel_id: string
-    user_id?: string
+    channelId: string
+    userId?: string
     content: string
     createdAt?: string
     updatedAt?: string

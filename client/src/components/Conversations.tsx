@@ -70,12 +70,12 @@ function Conversations() {
             key={c.id}
             id={c.id}
             accentColor={
-              c.user_id1 === user?.id
+              c.userId1 === user?.id
                 ? c.user2.accentColor
                 : c.user1.accentColor
             }
             name={
-              c.user_id1 === user?.id
+              c.userId1 === user?.id
                 ? c.user2.displayName
                 : c.user1.displayName
             }
@@ -102,7 +102,7 @@ const CreateConversationButton = ({
     try {
       const res = await axios.post(
         `${env.SERVER_ENDPOINT}/dms/create`,
-        { user_id1: u.id, user_id2: user?.id },
+        { userId1: u.id, userId2: user?.id },
         { withCredentials: true }
       );
 

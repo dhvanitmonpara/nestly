@@ -5,16 +5,16 @@ import prisma from "../db/db";
 
 export const createDirectConversation = async (req: Request, res: Response) => {
   try {
-    const { user_id1, user_id2 } = req.body;
+    const { userId1, userId2 } = req.body;
 
-    if (!user_id1 || !user_id2)
+    if (!userId1 || !userId2)
       throw new ApiError(400, "User ID 1 and 2 are required");
 
     const conversation = await prisma.directConversation.findFirst({
       where: {
         OR: [
-          { userId1: Number(user_id1), userId2: Number(user_id2) },
-          { userId1: Number(user_id2), userId2: Number(user_id1) },
+          { userId1: Number(userId1), userId2: Number(userId2) },
+          { userId1: Number(userId2), userId2: Number(userId1) },
         ],
       },
       include: {
@@ -46,8 +46,8 @@ export const createDirectConversation = async (req: Request, res: Response) => {
 
     const newConversation = await prisma.directConversation.create({
       data: {
-        userId1: Number(user_id1),
-        userId2: Number(user_id2),
+        userId1: Number(userId1),
+        userId2: Number(userId2),
       },
     });
 

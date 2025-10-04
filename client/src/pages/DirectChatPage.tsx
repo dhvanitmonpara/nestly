@@ -65,8 +65,8 @@ function DirectChatPage() {
       const newMessage: IDirectMessage = {
         id: Date.now().toString(),
         content: data.content,
-        conversation_id: conversationId,
-        sender_id: data.sender_id,
+        conversationId,
+        senderId: data.senderId,
         createdAt: data.createdAt,
       };
 
@@ -148,7 +148,7 @@ function DirectChatPage() {
           <div className="h-full">
             <div className="sticky top-0 bg-zinc-900 pl-[4.5rem] sm:pl-4 px-4 pt-4">
               <h1 className="w-full h-12 bg-zinc-800 px-4 rounded-md flex justify-start items-center">
-                {conversation?.user_id1 === user?.id
+                {conversation?.userId1 === user?.id
                   ? conversation?.user2?.displayName
                   : conversation?.user1?.displayName ?? <Skeleton className="w-16 h-5 rounded-md" />}
               </h1>
@@ -160,7 +160,7 @@ function DirectChatPage() {
                 <div className="sm:px-6 pb-4 text-lg font-semibold text-zinc-200">
                   <h3>
                     This is the beginning of an incredible conversation with{" "}
-                    {conversation?.user_id1 === user?.id
+                    {conversation?.userId1 === user?.id
                       ? conversation?.user2?.displayName
                       : conversation?.user1?.displayName}
                   </h3>
@@ -178,7 +178,7 @@ function DirectChatPage() {
 
                     // Check if it's the first in the sequence
                     const isFirstFromUser =
-                      prevMessage?.sender_id !== chat.sender_id;
+                      prevMessage?.senderId !== chat.senderId;
                     return (
                       <MessageCard
                         key={chat.id}
@@ -186,19 +186,19 @@ function DirectChatPage() {
                         continuesMessage={!isFirstFromUser}
                         id={chat.id}
                         displayName={
-                          chat.sender_id === conversation.user_id1
+                          chat.senderId === conversation.userId1
                             ? conversation.user1.displayName
                             : conversation.user2.displayName
                         }
                         accentColor={
-                          chat.sender_id === conversation.user_id1
+                          chat.senderId === conversation.userId1
                             ? conversation.user1.accentColor
                             : conversation.user2.accentColor
                         }
                         content={chat.content}
                         createdAt={chat?.createdAt ?? null}
                         username={
-                          chat.sender_id === conversation.user_id1
+                          chat.senderId === conversation.userId1
                             ? conversation.user1.username
                             : conversation.user2.username
                         }
@@ -219,7 +219,7 @@ function DirectChatPage() {
               lastMessage={
                 conversation.messages[
                   conversation.messages.length - 1
-                ].sender_id.toString() !== user?.id.toString()
+                ].senderId.toString() !== user?.id.toString()
                   ? conversation?.messages[conversation.messages.length - 1]
                       .content ?? null
                   : null
