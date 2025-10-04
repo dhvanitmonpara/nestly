@@ -71,7 +71,7 @@ io.on("connection", (socket) => {
 
   socket.on("message", (msg) => {
     if (msg.user?.id) {
-      createMessage(msg.content, msg.user.id, msg.channel_id);
+      createMessage(msg.content, msg.user.id, msg.channelId);
     } else {
       createDirectMessage(msg.content, msg.senderId, msg.conversation_id);
     }

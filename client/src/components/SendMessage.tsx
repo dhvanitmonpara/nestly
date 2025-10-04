@@ -119,16 +119,16 @@ function SendMessage<T extends IChannel | IConversation>({
     if (!socket.socket) return;
     const s = socket.socket;
 
-    const handleUserTyping = (username: string, channel_id: string) => {
-      if (channel_id === channelId || conversationId) {
+    const handleUserTyping = (username: string, channelId: string) => {
+      if (channelId === channelId || conversationId) {
         setTypingUsers((prev) =>
           prev.includes(username) ? prev : [...prev, username]
         );
       }
     };
 
-    const handleUserStopTyping = (username: string, channel_id: string) => {
-      if (channel_id === channelId || conversationId) {
+    const handleUserStopTyping = (username: string, channelId: string) => {
+      if (channelId === channelId || conversationId) {
         setTypingUsers((prev) => prev.filter((id) => id !== username));
       }
     };

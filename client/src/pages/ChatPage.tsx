@@ -68,7 +68,7 @@ function ChatPage() {
         content: data.content,
         user: data.user,
         createdAt: data.createdAt,
-        channel_id: channelId,
+        channelId: channelId,
       };
 
       setChannel((prev) => {
