@@ -447,14 +447,16 @@ export const sendOtp = async (req: Request, res: Response) => {
       {
         to: email,
         type: "OTP",
+        options: {
+          from: `"Nestly" <no-reply@nestly.com>`,
+        },
       }
     );
 
     if (!mailResponse.data.data.success)
       throw new ApiError(500, "Failed to send OTP");
     const otp = mailResponse.data.data.details.otp;
-    if (!otp)
-      throw new ApiError(500, "Failed to send OTP");
+    if (!otp) throw new ApiError(500, "Failed to send OTP");
 
     const hashedOTP = await hashOTP(otp);
 
