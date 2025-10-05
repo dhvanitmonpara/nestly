@@ -36,7 +36,7 @@ function ServerHealthChecker() {
       )
     }
 
-    const attemptsInterval = setInterval(checkServer, 5000)
+    const attemptsInterval = setInterval(checkServer, 10000)
 
     return () => {
       stopped = true
