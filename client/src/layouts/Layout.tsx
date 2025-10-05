@@ -13,6 +13,7 @@ import Sidebar from "../components/Sidebar";
 import { IoMenu } from "react-icons/io5";
 import useFeatureStore from "../store/featureStore";
 import Overlay from "../components/Overlay";
+import useCheckServerStatus from "../hooks/useCheckServerStatus";
 
 function Layout() {
   const user = useUserStore((s) => s.user);
@@ -27,6 +28,8 @@ function Layout() {
   const joinedServerId = searchParams.get("joinServer");
 
   const { handleAuthError } = useHandleAuthError();
+
+  useCheckServerStatus()
 
   const fetchJoinedServerDetails = async (servers: IServer[]) => {
     if (!joinedServerId) return null;

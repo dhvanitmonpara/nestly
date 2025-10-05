@@ -1,7 +1,11 @@
 import { Outlet } from "react-router-dom"
 import { Toaster } from "sonner"
+import useCheckServerStatus from "../hooks/useCheckServerStatus"
 
 function AuthLayout() {
+
+    useCheckServerStatus()
+
     return (
         <div className="bg-zinc-900 h-screen w-screen flex justify-center items-center">
             <Outlet />

@@ -17,6 +17,7 @@ import { FaMessage, FaUserGroup } from 'react-icons/fa6'
 import ShowWarning from './components/ShowWarning.tsx'
 import DirectChatPage from './pages/DirectChatPage.tsx'
 import OAuthSetupPage from './pages/OAuthSetupPage.tsx'
+import ServerHealthPage from './pages/ServerHealthPage.tsx'
 
 const router = createBrowserRouter([
   {
@@ -87,6 +88,10 @@ const router = createBrowserRouter([
       },
     ]
   },
+  {
+    path: "server-health",
+    element: <ServerHealthPage />
+  }
 ]);
 
 createRoot(document.getElementById('root')!).render(
