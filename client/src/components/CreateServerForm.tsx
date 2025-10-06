@@ -80,7 +80,7 @@ function CreateServerForm() {
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger className="w-12 h-12 mt-1 bg-zinc-800 sm:bg-transparent flex items-center justify-center text-xl cursor-pointer transition-colors duration-300 text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800 rounded-xl">
+            <DialogTrigger className="w-12 h-12 mt-1 bg-zinc-800 sm:bg-transparent flex items-center justify-center text-xl cursor-pointer transition-colors duration-300 text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800 rounded-full sm:rounded-xl">
                 <FiPlus />
             </DialogTrigger>
             <DialogContent className="bg-zinc-900 text-zinc-100 border-zinc-800 !max-w-96">
