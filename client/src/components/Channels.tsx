@@ -69,9 +69,11 @@ function Channels() {
   return (
     <div className="space-y-1">
       {serverId && user?.id === server?.ownerId && (
-        <CreateChannelForm setChannel={setChannels} />
+        <>
+          <CreateChannelForm setChannel={setChannels} />
+          <Separator className="bg-zinc-800" />
+        </>
       )}
-      <Separator className="bg-zinc-800" />
       {serverId && channels.length > 0 ? (
         channels.map((channel) => {
           const count =
