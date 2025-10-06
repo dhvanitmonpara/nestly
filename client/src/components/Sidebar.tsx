@@ -30,10 +30,9 @@ function Sidebar({ className }: { className?: string }) {
         <NavLink
           to="/dm"
           className={({ isActive }) =>
-            `flex items-center justify-center select-none h-12 w-12 mt-1 transition-all duration-50 font-semibold ${
-              isActive
-                ? "bg-indigo-500 rounded-xl"
-                : "bg-zinc-700/50 rounded-full text-zinc-300 hover:rounded-xl"
+            `flex items-center justify-center select-none h-12 w-12 mt-1 transition-all duration-50 font-semibold ${isActive
+              ? "bg-indigo-500 rounded-xl"
+              : "bg-zinc-700/50 rounded-full text-zinc-300 hover:rounded-xl"
             }  cursor-pointer`
           }
         >
@@ -99,6 +98,13 @@ function Sidebar({ className }: { className?: string }) {
 
 const MembersSidebar = () => {
   const [open, setOpen] = useState(false);
+  const { serverId, conversationId } = useParams<{
+    serverId: string;
+    conversationId: string;
+  }>();
+
+  if (!serverId && !conversationId) return
+
   return (
     <>
       <button
@@ -114,9 +120,8 @@ const MembersSidebar = () => {
       {open && <Overlay closeHandler={() => setOpen(false)} />}
       <Members
         closeHandler={() => setOpen(false)}
-        className={`fixed h-full w-full md:hidden xs:w-60 top-0 left-0 z-50 shadow-2xl transition-all duration-300 ${
-          open ? "" : "-translate-x-full"
-        }`}
+        className={`fixed h-full w-full md:hidden xs:w-60 top-0 left-0 z-50 shadow-2xl transition-all duration-300 ${open ? "" : "-translate-x-full"
+          }`}
       />
     </>
   );
