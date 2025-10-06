@@ -64,7 +64,7 @@ export const googleCallback = async (req: Request, res: Response) => {
       });
 
       return res.redirect(
-        `${env.ACCESS_CONTROL_ORIGIN}/oauth/tempToken=${tempToken}`
+        `${env.ACCESS_CONTROL_ORIGIN}/auth/oauth/signin?tempToken=${tempToken}`
       );
     }
 

@@ -18,6 +18,7 @@ import ShowWarning from './components/ShowWarning.tsx'
 import DirectChatPage from './pages/DirectChatPage.tsx'
 import OAuthSetupPage from './pages/OAuthSetupPage.tsx'
 import ServerHealthPage from './pages/ServerHealthPage.tsx'
+import OAuthRedirect from './pages/OAuthRedirect.tsx'
 
 const router = createBrowserRouter([
   {
@@ -43,7 +44,11 @@ const router = createBrowserRouter([
       {
         path: "oauth/callback",
         element: <OAuthSetupPage />
-      }
+      },
+      {
+        path: "oauth/signin",
+        element: <OAuthRedirect />
+      },
     ]
   },
   {
