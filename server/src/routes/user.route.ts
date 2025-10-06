@@ -13,6 +13,7 @@ import {
   searchUsers,
   googleCallback,
   handleUserOAuth,
+  handleTempToken,
 } from "../controllers/user.controller";
 import { verifyUserJWT } from "../middlewares/auth.middleware";
 
@@ -23,6 +24,7 @@ router.route("/initialize").post(initializeUser);
 router.route("/me").get(verifyUserJWT, getUserData);
 router.route("/id/:userId").get(verifyUserJWT, getUserById);
 router.route("/login").post(loginUser);
+router.route("/auth/finalize").post(handleTempToken);
 router.route("/logout").post(verifyUserJWT, logoutUser);
 router.route("/update").put(verifyUserJWT, updateUser);
 router.route("/search/:query").get(verifyUserJWT, searchUsers);

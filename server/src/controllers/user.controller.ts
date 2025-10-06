@@ -56,17 +56,16 @@ export const googleCallback = async (req: Request, res: Response) => {
       const { accessToken, refreshToken } =
         await userService.generateAccessAndRefreshToken(existingUser.id, req);
 
-      return res
-        .status(200)
-        .cookie("__accessToken", accessToken, {
-          ...userService.options,
-          maxAge: userService.accessTokenExpiry,
-        })
-        .cookie("__refreshToken", refreshToken, {
-          ...userService.options,
-          maxAge: userService.refreshTokenExpiry,
-        })
-        .redirect(env.ACCESS_CONTROL_ORIGIN);
+      const tempToken = crypto.randomUUID();
+      nodeCache.set(tempToken, {
+        accessToken,
+        refreshToken,
+        createdAt: Date.now(),
+      });
+
+      return res.redirect(
+        `${env.ACCESS_CONTROL_ORIGIN}/oauth/tempToken=${tempToken}`
+      );
     }
 
     res.redirect(
@@ -80,6 +79,31 @@ export const googleCallback = async (req: Request, res: Response) => {
       "GOOGLE_LOGIN_ERROR"
     );
   }
+};
+
+export const handleTempToken = async (req: Request, res: Response) => {
+  const { tempToken } = req.body;
+
+  const stored: { accessToken: string; refreshToken: string } | undefined =
+    nodeCache.get(tempToken);
+  if (!stored)
+    return res.status(400).json({ error: "Invalid or expired token" });
+
+  nodeCache.del(tempToken);
+
+  const { accessToken, refreshToken } = stored;
+
+  res
+    .status(200)
+    .cookie("__accessToken", accessToken, {
+      ...userService.options,
+      maxAge: userService.accessTokenExpiry,
+    })
+    .cookie("__refreshToken", refreshToken, {
+      ...userService.options,
+      maxAge: userService.refreshTokenExpiry,
+    })
+    .json({ success: true });
 };
 
 export const handleUserOAuth = async (req: Request, res: Response) => {
