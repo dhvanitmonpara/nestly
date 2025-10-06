@@ -4,6 +4,8 @@ import { useEffect, useState } from "react"
 import getServerStatus from "../utils/getServerStatus"
 import { useNavigate } from "react-router-dom"
 
+const intervalTime = 30000
+
 function ServerHealthChecker() {
   const [attempts, setAttempts] = useState(0)
   const [timer, setTimer] = useState(0)
@@ -33,10 +35,13 @@ function ServerHealthChecker() {
           clearInterval(timerInterval)
           navigate("/")
         },
+        intervalTime
       )
     }
 
-    const attemptsInterval = setInterval(checkServer, 10000)
+    checkServer()
+
+    const attemptsInterval = setInterval(checkServer, intervalTime)
 
     return () => {
       stopped = true

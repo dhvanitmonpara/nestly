@@ -2,6 +2,7 @@ import axios from "axios";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import env from "../conf/env";
+import { LuLoaderCircle } from "react-icons/lu";
 
 export default function OAuthRedirect() {
   const navigate = useNavigate();
@@ -30,5 +31,8 @@ export default function OAuthRedirect() {
     })()
   }, [navigate]);
 
-  return <div>Signing you in...</div>;
+  return <div className="text-zinc-100 flex flex-col justify-center items-center space-y-4">
+    <h3>Signing you in...</h3>
+    <LuLoaderCircle className="animate-spin text-2xl" />
+  </div>
 }
