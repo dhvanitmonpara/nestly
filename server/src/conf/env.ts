@@ -18,6 +18,7 @@ const envSchema = z.object({
   LIVEKIT_API_SECRET: z.string(),
   GOOGLE_OAUTH_CLIENT_ID: z.string(),
   GOOGLE_OAUTH_CLIENT_SECRET: z.string(),
+  SMTP_API_TOKEN: z.string(),
   SERVER_BASE_URI: z.string()
 });
 

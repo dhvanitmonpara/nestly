@@ -474,6 +474,12 @@ export const sendOtp = async (req: Request, res: Response) => {
         options: {
           from: `"Nestly" <no-reply@nestly.com>`,
         },
+      },
+      {
+        headers: {
+          "x-api-token": env.SMTP_API_TOKEN,
+          "Content-Type": "application/json",
+        },
       }
     );
 
