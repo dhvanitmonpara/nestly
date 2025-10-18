@@ -24,6 +24,8 @@ import dmsRouter from "./routes/dms.route";
 import videocallRoute from "./routes/videocall.route";
 import { verifyUserJWT } from "./middlewares/auth.middleware";
 import VideocallService from "./services/videocall.service";
+import errorHandlingMiddleware from "./middlewares/error.middleware";
+import errorMiddleware from "./middlewares/error.middleware";
 
 const app = express();
 const server = http.createServer(app);
@@ -232,5 +234,8 @@ app.use("/api/v1/servers", verifyUserJWT, serverRouter);
 app.use("/api/v1/messages", verifyUserJWT, messageRouter);
 app.use("/api/v1/videocall", verifyUserJWT, videocallRoute);
 app.use("/api/v1/dms", verifyUserJWT, dmsRouter);
+
+app.use(errorMiddleware.notFoundErrorHandler);
+app.use(errorMiddleware.generalErrorHandler);
 
 export default server;

@@ -16,7 +16,11 @@ const verifyUserJWT = async (
       req.header("Authorization")?.replace("Bearer ", "");
 
     if (!token) {
-      throw new ApiError(401, "Unauthorized");
+      throw new ApiError({
+        statusCode: 401,
+        message: "Unauthorized",
+        data: { service: "authMiddleware.verifyUserJWT" },
+      });
     }
 
     const decodedToken = jwt.verify(
@@ -25,7 +29,12 @@ const verifyUserJWT = async (
     ) as JwtPayload;
 
     if (!decodedToken || typeof decodedToken == "string") {
-      throw new ApiError(401, "Invalid Access Token", "INVALID_ACCESS_TOKEN");
+      throw new ApiError({
+        statusCode: 401,
+        message: "Invalid Access Token",
+        code: "INVALID_ACCESS_TOKEN",
+        data: { service: "authMiddleware.verifyUserJWT" },
+      });
     }
 
     const user = await prisma.user.findUnique({
@@ -35,15 +44,21 @@ const verifyUserJWT = async (
     });
 
     if (!user) {
-      throw new ApiError(401, "Invalid Access Token");
+      throw new ApiError({
+        statusCode: 401,
+        message: "User not found",
+        code: "USER_NOT_FOUND",
+        data: { service: "authMiddleware.verifyUserJWT" },
+      });
     }
 
     if (!user.refreshToken) {
-      throw new ApiError(
-        401,
-        "Refresh token session is not valid",
-        "INVALID_SESSION"
-      );
+      throw new ApiError({
+        statusCode: 401,
+        message: "Refresh token session is not valid",
+        code: "INVALID_SESSION",
+        data: { service: "authMiddleware.verifyUserJWT" },
+      });
     }
 
     const mappedUser = {

@@ -1,32 +1,32 @@
-class ApiError extends Error {
+export class ApiError extends Error {
   statusCode: number;
-  data: any;
-  message: string;
-  success: boolean;
   code: string;
-  errors: any[];
+  success: boolean;
+  errors?: Record<string, any>[];
+  data?: unknown;
+  isOperational: boolean;
 
-  constructor(
-      statusCode: number,
-      message = "Something went wrong",
-      code: string = "GENERIC_ERROR",
-      errors = [],
-      stack = ""
-  ) {
-      super(message)
-      this.statusCode = statusCode
-      this.data = null
-      this.message = message
-      this.code = code
-      this.success = false
-      this.errors = errors
+  constructor({
+    statusCode = 500,
+    message = "Something went wrong",
+    code = "GENERIC_ERROR",
+    errors,
+    data,
+  }: {
+    statusCode?: number;
+    message?: string;
+    code?: string;
+    errors?: Record<string, any>[];
+    data?: unknown;
+  }) {
+    super(message);
+    this.statusCode = statusCode;
+    this.code = code;
+    this.success = false;
+    this.errors = errors;
+    this.data = data;
+    this.isOperational = true;
 
-      if (stack) {
-          this.stack = stack
-      } else {
-          (Error as any).captureStackTrace(this, this.constructor)
-      }
+    Error.captureStackTrace(this, this.constructor);
   }
 }
-
-export { ApiError }
