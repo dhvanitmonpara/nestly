@@ -1,14 +1,12 @@
-import e, { Request, Response } from "express";
-import handleError from "../utils/HandleError";
+import { Request, Response } from "express";
 import { ApiError } from "../utils/ApiError";
 import prisma from "../db/db";
+import asyncHandler from "../utils/asyncHandler";
+import ApiResponse from "../utils/ApiResponse";
 
-export const createDirectConversation = async (req: Request, res: Response) => {
-  try {
+export const createDirectConversation = asyncHandler(
+  async (req: Request, res: Response) => {
     const { userId1, userId2 } = req.body;
-
-    if (!userId1 || !userId2)
-      throw new ApiError(400, "User ID 1 and 2 are required");
 
     const conversation = await prisma.directConversation.findFirst({
       where: {
@@ -75,22 +73,17 @@ export const createDirectConversation = async (req: Request, res: Response) => {
       },
     });
 
-    return res.status(201).json({
-      message: "Direct conversation created successfully",
-      conversation: createdConversation,
-    });
-  } catch (error) {
-    handleError(
-      error,
-      res,
-      "Failed to create direct conversation",
-      "CREATE_DIRECT_CONVERSATION"
+    return ApiResponse.created(
+      {
+        conversation: createdConversation,
+      },
+      "Direct conversation created successfully"
     );
   }
-};
+);
 
-export const listDirectConversations = async (req: Request, res: Response) => {
-  try {
+export const listDirectConversations = asyncHandler(
+  async (req: Request, res: Response) => {
     const { userId } = req.params;
 
     const conversations = await prisma.directConversation.findMany({
@@ -121,18 +114,11 @@ export const listDirectConversations = async (req: Request, res: Response) => {
       message: "Direct conversations fetched successfully",
       conversations,
     });
-  } catch (error) {
-    handleError(
-      error,
-      res,
-      "Failed to get direct conversations",
-      "LIST_DIRECT_CONVERSATION"
-    );
   }
-};
+);
 
-export const deleteDirectConversation = async (req: Request, res: Response) => {
-  try {
+export const deleteDirectConversation = asyncHandler(
+  async (req: Request, res: Response) => {
     const { id } = req.params;
 
     const conversation = await prisma.directConversation.findUnique({
@@ -141,7 +127,11 @@ export const deleteDirectConversation = async (req: Request, res: Response) => {
       },
     });
 
-    if (!conversation) throw new ApiError(404, "Direct conversation not found");
+    if (!conversation)
+      throw new ApiError({
+        statusCode: 404,
+        message: "Direct conversation not found",
+      });
 
     await prisma.directMessage.deleteMany({
       where: {
@@ -155,24 +145,12 @@ export const deleteDirectConversation = async (req: Request, res: Response) => {
       },
     });
 
-    return res.status(200).json({
-      message: "Direct conversation deleted successfully",
-    });
-  } catch (error) {
-    handleError(
-      error,
-      res,
-      "Failed to delete direct conversation",
-      "DELETE_DIRECT_CONVERSATION"
-    );
+    return ApiResponse.ok({}, "Direct conversation deleted successfully");
   }
-};
+);
 
-export const getDirectConversationMessages = async (
-  req: Request,
-  res: Response
-) => {
-  try {
+export const getDirectConversationMessages = asyncHandler(
+  async (req: Request, res: Response) => {
     const { id } = req.params;
 
     const conversation = await prisma.directConversation.findUnique({
@@ -199,7 +177,11 @@ export const getDirectConversationMessages = async (
       },
     });
 
-    if (!conversation) throw new ApiError(404, "Direct conversation not found");
+    if (!conversation)
+      throw new ApiError({
+        statusCode: 404,
+        message: "Direct conversation not found",
+      });
 
     const messages = await prisma.directMessage.findMany({
       where: {
@@ -207,25 +189,18 @@ export const getDirectConversationMessages = async (
       },
     });
 
-    return res.status(200).json({
-      message: "Direct conversation messages fetched successfully",
-      conversation: {
+    return ApiResponse.ok(
+      {
         ...conversation,
         messages,
       },
-    });
-  } catch (error) {
-    handleError(
-      error,
-      res,
-      "Failed to get direct conversation messages",
-      "GET_DIRECT_CONVERSATION_MESSAGES"
+      "Direct conversation messages fetched successfully"
     );
   }
-};
+);
 
-export const getConversationUser = async (req: Request, res: Response) => {
-  try {
+export const getConversationUser = asyncHandler(
+  async (req: Request, res: Response) => {
     const { id } = req.params;
 
     const conversation = await prisma.directConversation.findUnique({
@@ -252,27 +227,24 @@ export const getConversationUser = async (req: Request, res: Response) => {
       },
     });
 
-    if (!conversation) throw new ApiError(404, "Direct conversation not found");
+    if (!conversation)
+      throw new ApiError({
+        statusCode: 404,
+        message: "Direct conversation not found",
+      });
 
-    return res.status(200).json({
-      message: "Direct conversation users fetched successfully",
-      users: [conversation.user1, conversation.user2],
-    });
-  } catch (error) {
-    handleError(
-      error,
-      res,
-      "Failed to get direct conversation users",
-      "GET_DIRECT_CONVERSATION_USERS"
+    return ApiResponse.ok(
+      {
+        users: [conversation.user1, conversation.user2],
+      },
+      "Direct conversation users fetched successfully"
     );
   }
-};
+);
 
-export const deleteDirectMessage = async (req: Request, res: Response) => {
-  try {
+export const deleteDirectMessage = asyncHandler(
+  async (req: Request, res: Response) => {
     const { id } = req.params;
-
-    if (!id) throw new ApiError(400, "Message Id is required");
 
     const message = await prisma.directMessage.findUnique({
       where: {
@@ -280,7 +252,8 @@ export const deleteDirectMessage = async (req: Request, res: Response) => {
       },
     });
 
-    if (!message) throw new ApiError(404, "Message not found");
+    if (!message)
+      throw new ApiError({ statusCode: 404, message: "Message not found" });
 
     await prisma.directMessage.delete({
       where: {
@@ -288,21 +261,14 @@ export const deleteDirectMessage = async (req: Request, res: Response) => {
       },
     });
 
-    return res.status(200).json({
-      message: "Message deleted successfully",
-    });
-  } catch (error) {
-    handleError(error, res, "Failed to delete message", "MESSAGE_DELETION");
+    return ApiResponse.ok({}, "Message deleted successfully");
   }
-};
+);
 
-export const updateDirectMessage = async (req: Request, res: Response) => {
-  try {
+export const updateDirectMessage = asyncHandler(
+  async (req: Request, res: Response) => {
     const { id } = req.params;
     const { content } = req.body;
-
-    if (!id) throw new ApiError(400, "Message Id is required");
-    if (!content) throw new ApiError(400, "Content is required");
 
     const message = await prisma.directMessage.findUnique({
       where: {
@@ -310,7 +276,8 @@ export const updateDirectMessage = async (req: Request, res: Response) => {
       },
     });
 
-    if (!message) throw new ApiError(404, "Message not found");
+    if (!message)
+      throw new ApiError({ statusCode: 404, message: "Message not found" });
 
     const updatedMessage = await prisma.directMessage.update({
       where: {
@@ -321,11 +288,11 @@ export const updateDirectMessage = async (req: Request, res: Response) => {
       },
     });
 
-    return res.status(200).json({
-      message: "Message updated successfully",
-      messageObject: { ...updatedMessage, content },
-    });
-  } catch (error) {
-    handleError(error, res, "Failed to update message", "MESSAGE_UPDATE");
+    return ApiResponse.ok(
+      {
+        messageObject: { ...updatedMessage, content },
+      },
+      "Message updated successfully"
+    );
   }
-};
+);

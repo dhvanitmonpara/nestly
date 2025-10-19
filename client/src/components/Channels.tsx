@@ -40,12 +40,14 @@ function Channels() {
           toast.error("Failed to fetch channels");
           return;
         }
-        setChannels(res.data.channels);
+        
+        const channels = res.data.data.channels
+        setChannels(channels);
 
-        if (s && res.data.channels.length > 0) {
+        if (s && channels.length > 0) {
           s.emit(
             "listRooms",
-            res.data.channels
+            channels
               .filter((c: IChannel) => c.type === "voice")
               .map((c: IChannel) => c.id.toString())
           );
@@ -93,7 +95,7 @@ function Channels() {
         })
       ) : (
         <div className="h-96 flex justify-center items-center">
-          <p className="text-zinc-400 ">No channels exists.</p>
+          <p className="text-zinc-400">No channels exists.</p>
         </div>
       )}
     </div>

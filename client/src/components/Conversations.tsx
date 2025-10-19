@@ -114,7 +114,7 @@ const CreateConversationButton = ({
       toast.success(
         `Successfully created a conversation with ${u.displayName}`
       );
-      setConversations((prev) => [...prev, res.data.conversation]);
+      setConversations((prev) => [...prev, res.data.data.conversation]);
       navigate(`/dm/${res.data.conversation.id}`);
       setOpen(false);
     } catch (error) {
@@ -177,7 +177,7 @@ const SearchUserForm = ({
           return;
         }
 
-        setResults(res.data.results);
+        setResults(res.data.data);
       } catch (error) {
         handleAuthError(error as AxiosError);
       } finally {

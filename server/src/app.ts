@@ -75,14 +75,9 @@ io.on("connection", (socket) => {
     if (msg.user?.id) {
       createMessage(msg.content, msg.user.id, msg.channelId);
     } else {
-      createDirectMessage(msg.content, msg.senderId, msg.conversation_id);
+      createDirectMessage(msg.content, msg.senderId, msg.conversationId);
     }
     socket.to(msg.serverId).emit("message", msg);
-  });
-
-  socket.on("directMessage", (msg) => {
-    createDirectMessage(msg.content, msg.senderId, msg.conversation_id);
-    socket.to(msg.user2).emit("directMessage", msg);
   });
 
   socket.on("userOnlineDM", ({ conversationId }) => {

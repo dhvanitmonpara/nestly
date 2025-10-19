@@ -59,7 +59,7 @@ function Layout() {
         { withCredentials: true }
       );
 
-      const servers = res.data.servers;
+      const servers = res.data.data;
       const joinedServer = await fetchJoinedServerDetails(servers);
 
       setServers(joinedServer ? [...servers, joinedServer] : servers);

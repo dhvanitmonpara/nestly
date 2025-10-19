@@ -57,9 +57,10 @@ function Members({
         toast.error("Failed to fetch members");
         return;
       }
-
+      
+      const members = res.data.data
       if (serverId) {
-        const users = res.data.members.map((u: IncomingMemberType) => {
+        const users = members.members.map((u: IncomingMemberType) => {
           if (u.userId === user?.id) {
             return { ...u, isOnline: true };
           }
@@ -69,17 +70,17 @@ function Members({
         setMembers([
           ...users,
           {
-            ...res.data.owner,
+            ...members.owner,
             isOwner: true,
-            isOnline: user?.id === res.data.owner.userId,
+            isOnline: user?.id === members.owner.userId,
           },
         ]);
         socket.emit("userOnline", { serverId });
       } else {
         const oppositeUser: IncomingMemberType = {
-          user: res.data.users.find((u: IUser) => u.id !== user?.id),
+          user: members.users.find((u: IUser) => u.id !== user?.id),
           serverId: Number(conversationId ?? "0"),
-          userId: res.data.users.find((u: IUser) => u.id !== user?.id)?.id,
+          userId: members.users.find((u: IUser) => u.id !== user?.id)?.id,
           isOnline: false,
           isOwner: false,
         };

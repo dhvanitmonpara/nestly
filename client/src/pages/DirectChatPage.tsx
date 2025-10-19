@@ -39,12 +39,12 @@ function DirectChatPage() {
           { withCredentials: true }
         );
 
-        if (!res.data) {
+        if (!res.data.data) {
           navigate("/");
           return;
         }
 
-        setConversation(res.data.conversation);
+        setConversation(res.data.data);
       } catch (error) {
         console.log(error);
       } finally {
@@ -61,7 +61,6 @@ function DirectChatPage() {
     const handleMessage = (data: IDirectMessage) => {
       if (!conversationId) return;
 
-      console.log("Received message:", data);
       const newMessage: IDirectMessage = {
         id: Date.now().toString(),
         content: data.content,
@@ -92,8 +91,8 @@ function DirectChatPage() {
             ...prev,
             messages: prev.messages
               ? prev.messages.map((m) =>
-                  m.id === data.messageId ? { ...m, content: data.content } : m
-                )
+                m.id === data.messageId ? { ...m, content: data.content } : m
+              )
               : [],
           } as IConversation;
         });
@@ -165,7 +164,7 @@ function DirectChatPage() {
                       : conversation?.user1?.displayName}
                   </h3>
                 </div>
-                {conversation?.messages && conversation.messages.length > 0 ? (
+                {(conversation?.messages && conversation.messages.length > 0) ? (
                   conversation.messages.map((chat) => {
                     const messages = conversation?.messages || [];
                     const currentIndex = messages.findIndex(
@@ -219,10 +218,10 @@ function DirectChatPage() {
               lastMessage={
                 conversation.messages[
                   conversation.messages.length - 1
-                ].senderId.toString() !== user?.id.toString()
-                  ? conversation?.messages[conversation.messages.length - 1]
-                      .content ?? null
-                  : null
+                ]?.senderId.toString() !== user?.id.toString()
+                  ? conversation?.messages[conversation.messages.length - 1]?.
+                    content ?? null
+                    : null
               }
               setChannel={setConversation}
             />

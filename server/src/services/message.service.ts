@@ -1,47 +1,72 @@
 import { ApiError } from "../utils/ApiError";
 import handleError from "../utils/HandleError";
-import prisma from "../db/db"
+import prisma from "../db/db";
 
-const createMessage = async (content: string, userId: number, channelId: number) => {
+const createMessage = async (
+  content: string,
+  userId: number,
+  channelId: number
+) => {
   try {
-
-    if (!content) throw new ApiError(400, "Message is required");
+    if (!content)
+      throw new ApiError({ statusCode: 400, message: "Message is required" });
     const message = await prisma.message.create({
       data: {
         content,
         userId,
-        channelId: Number(channelId)
-      }
-    })
+        channelId: Number(channelId),
+      },
+    });
 
     if (!message) {
-      throw new ApiError(400, "Failed to create message");
+      throw new ApiError({
+        statusCode: 400,
+        message: "Failed to create message",
+      });
     }
 
     return message;
   } catch (error) {
-    handleError(error as ApiError, null, "Failed to create message", "CREATE_MSG");
+    handleError(
+      error as ApiError,
+      null,
+      "Failed to create message",
+      "CREATE_MSG"
+    );
   }
 };
 
-const createDirectMessage = async (content: string, senderId: string, conversation_id: string) => {
+const createDirectMessage = async (
+  content: string,
+  senderId: string,
+  conversation_id: string
+) => {
   try {
-    if (!content) throw new ApiError(400, "Message is required")
+    if (!content)
+      throw new ApiError({ statusCode: 400, message: "Message is required" });
     const message = await prisma.directMessage.create({
       data: {
         content,
         conversationId: Number(conversation_id),
-        senderId: Number(senderId)
-      }
-    })
+        senderId: Number(senderId),
+      },
+    });
 
-    if (!message) throw new ApiError(400, "Failed to create message")
+    if (!message)
+      throw new ApiError({
+        statusCode: 400,
+        message: "Failed to create message",
+      });
 
-    return message
-
+    return message;
   } catch (error) {
-    handleError(error as ApiError, null, "Failed to create message", "CREATE_DIRECT_MSG");
+    handleError(
+      error as ApiError,
+      null,
+      "Failed to create message",
+      "CREATE_DIRECT_MSG"
+    );
   }
-}
+};
 
 export { createMessage, createDirectMessage };

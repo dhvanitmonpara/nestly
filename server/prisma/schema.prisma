@@ -38,6 +38,8 @@ model Server {
   updatedAt DateTime  @default(now()) @updatedAt()
 
   owner User @relation("ServerOwner", fields: [ownerId], references: [id])
+
+  @@index([ownerId])
 }
 
 model Channel {
@@ -50,6 +52,8 @@ model Channel {
 
   server   Server    @relation(fields: [serverId], references: [id])
   messages Message[]
+
+  @@index([serverId])
 }
 
 model Message {
@@ -62,6 +66,9 @@ model Message {
 
   channel Channel @relation(fields: [channelId], references: [id])
   user    User    @relation(fields: [userId], references: [id])
+
+  @@index([channelId])
+  @@index([userId])
 }
 
 model Member {
@@ -75,6 +82,7 @@ model Member {
   user   User   @relation(fields: [userId], references: [id])
 
   @@unique([userId, serverId])
+  @@index([serverId])
 }
 
 model DirectConversation {
@@ -85,6 +93,9 @@ model DirectConversation {
   user1    User            @relation("DM_User1", fields: [userId1], references: [id])
   user2    User            @relation("DM_User2", fields: [userId2], references: [id])
   messages DirectMessage[]
+
+  @@index([userId1])
+  @@index([userId2])
 }
 
 model DirectMessage {
@@ -97,6 +108,9 @@ model DirectMessage {
 
   conversation DirectConversation @relation(fields: [conversationId], references: [id])
   sender       User               @relation("DM_Sender", fields: [senderId], references: [id])
+
+  @@index([conversationId])
+  @@index([senderId])
 }
 
 enum AuthType {

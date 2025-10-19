@@ -29,7 +29,7 @@ type ChannelDataType = {
     type: "text" | "voice"
 }
 
-function CreateChannelForm({setChannel}: {setChannel:  React.Dispatch<React.SetStateAction<IChannel[]>>}) {
+function CreateChannelForm({ setChannel }: { setChannel: React.Dispatch<React.SetStateAction<IChannel[]>> }) {
 
     const [open, setOpen] = useState(false)
 
