@@ -1,6 +1,5 @@
 import { env } from "./conf/env";
 import express from "express";
-import { createDirectMessage, createMessage } from "./services/message.service";
 import { Server } from "socket.io";
 import helmet from "helmet"
 import cors, { CorsOptions } from "cors";
@@ -24,7 +23,6 @@ import serverRouter from "./routes/server.route";
 import dmsRouter from "./routes/dms.route";
 import videocallRoute from "./routes/videocall.route";
 import { verifyUserJWT } from "./middlewares/auth.middleware";
-import videocallService from "./services/videocall.service";
 import errorMiddleware from "./middlewares/error.middleware";
 import { socketService } from "./services/socket.service";
 

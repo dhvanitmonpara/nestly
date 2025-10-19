@@ -2,9 +2,7 @@ import { Request, Response } from "express";
 import { AccessToken, VideoGrant } from "livekit-server-sdk";
 import { env } from "../conf/env";
 import handleError from "../utils/HandleError";
-import VideocallService from "../services/videocall.service";
-
-const videocallService = new VideocallService();
+import videocallService from "../services/videocall.service";
 
 export const getToken = async (req: Request, res: Response) => {
     try {
