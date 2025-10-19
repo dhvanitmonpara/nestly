@@ -41,4 +41,5 @@ class VideocallService {
     };
 }
 
-export default VideocallService;
+const videocallService = new VideocallService();
+export default videocallService;

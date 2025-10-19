@@ -1,7 +1,8 @@
 import { env } from "./conf/env";
 import express from "express";
 import { createDirectMessage, createMessage } from "./services/message.service";
-import { Server, Socket } from "socket.io";
+import { Server } from "socket.io";
+import helmet from "helmet"
 import cors, { CorsOptions } from "cors";
 import http from "http";
 
@@ -23,8 +24,7 @@ import serverRouter from "./routes/server.route";
 import dmsRouter from "./routes/dms.route";
 import videocallRoute from "./routes/videocall.route";
 import { verifyUserJWT } from "./middlewares/auth.middleware";
-import VideocallService from "./services/videocall.service";
-import errorHandlingMiddleware from "./middlewares/error.middleware";
+import videocallService from "./services/videocall.service";
 import errorMiddleware from "./middlewares/error.middleware";
 
 const app = express();
@@ -46,12 +46,11 @@ const corsOptions: CorsOptions = {
 };
 
 app.use(cookieParser());
+app.use(helmet())
 app.use(cors(corsOptions));
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public"));
-
-const videocall = new VideocallService();
 
 io.on("connection", (socket) => {
   socket.userId = socket.handshake.auth.userId as string;
@@ -188,7 +187,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("listRooms", async (roomNames: string[]) => {
-    const rooms = await videocall.listRooms();
+    const rooms = await videocallService.listRooms();
     const participantsPerRoom = await rooms
       ?.filter((r) => roomNames.includes(r.name))
       .map((r) => ({ name: r.name, participantsCount: r.numParticipants }));
@@ -204,7 +203,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("deleteRoom", (roomName) => {
-    videocall.deleteRoom(roomName);
+    videocallService.deleteRoom(roomName);
   });
 
   socket.on("deleteMessage", ({ messageId, serverId, streamId }) => {
