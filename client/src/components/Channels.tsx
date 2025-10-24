@@ -41,7 +41,7 @@ function Channels() {
           return;
         }
         
-        const channels = res.data.data.channels
+        const channels = res.data.data
         setChannels(channels);
 
         if (s && channels.length > 0) {
