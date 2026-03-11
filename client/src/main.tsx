@@ -17,8 +17,8 @@ import { FaMessage, FaUserGroup } from 'react-icons/fa6'
 import ShowWarning from './components/ShowWarning.tsx'
 import DirectChatPage from './pages/DirectChatPage.tsx'
 import OAuthSetupPage from './pages/OAuthSetupPage.tsx'
-import ServerHealthPage from './pages/ServerHealthPage.tsx'
 import OAuthRedirect from './pages/OAuthRedirect.tsx'
+import { StrictMode } from 'react'
 
 const router = createBrowserRouter([
   {
@@ -61,7 +61,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/dm",
-        element: <ShowWarning text="It seems like you haven't selected any DM yet, select one to continue." icon={<FaMessage/>} />
+        element: <ShowWarning text="It seems like you haven't selected any DM yet, select one to continue." icon={<FaMessage />} />
       },
       {
         path: "/dm/:conversationId",
@@ -93,16 +93,12 @@ const router = createBrowserRouter([
       },
     ]
   },
-  {
-    path: "server-health",
-    element: <ServerHealthPage />
-  }
 ]);
 
 createRoot(document.getElementById('root')!).render(
-  // <StrictMode>
-  <SocketProvider>
-    <RouterProvider router={router} />
-  </SocketProvider>
-  // </StrictMode>,
+  <StrictMode>
+    <SocketProvider>
+      <RouterProvider router={router} />
+    </SocketProvider>
+  </StrictMode>,
 )

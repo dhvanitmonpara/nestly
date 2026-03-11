@@ -4,3 +4,5 @@ node_modules
 env.production.*
 
 /src/generated/prisma
+
+DEV_NOTES.md
