@@ -1,16 +1,12 @@
-# Simple Dockerfile for Google Cloud Run
-# Build: docker build -f Dockerfile.cloudrun -t nestly-server .
-# Run:   docker run -p 8080:8080 --env-file .env nestly-server
-
-FROM node:20-alpine
-
+# -------- Build stage --------
+FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Copy package files
+# Copy manifests + prisma schema first (better layer caching)
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install dependencies
+# Install all deps (need devDeps to build)
 RUN npm ci
 
 # Generate Prisma client
@@ -20,11 +16,28 @@ RUN npx prisma generate
 COPY . .
 RUN npm run build
 
-# Remove dev dependencies to reduce image size
-RUN npm prune --production
+# -------- Runtime stage --------
+FROM node:20-alpine AS runtime
 
-# Cloud Run sets PORT automatically (default 8080)
+RUN apk add --no-cache dumb-init
+
+# Non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001 -G nodejs
+
+WORKDIR /app
+
+# Copy only what's needed to run
+COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
+COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
+COPY --chown=nodejs:nodejs package*.json ./
+
+ENV NODE_ENV=production
+ENV PORT=8080
+
 EXPOSE 8080
+USER nodejs
 
-# Start server
+ENTRYPOINT ["dumb-init", "--"]
 CMD ["node", "dist/index.js"]
