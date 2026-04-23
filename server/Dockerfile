@@ -34,9 +34,9 @@ COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
 COPY --chown=nodejs:nodejs package*.json ./
 
 ENV NODE_ENV=production
-ENV PORT=8080
+ENV PORT=8000
 
-EXPOSE 8080
+EXPOSE 8000
 USER nodejs
 
 ENTRYPOINT ["dumb-init", "--"]
