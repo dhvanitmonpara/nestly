@@ -1,0 +1,18 @@
+services:
+  api:
+    container_name: nestly-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    expose:
+      - 8000
+    restart: unless-stopped
+    mem_limit: 384m
+    env_file:
+      - .env.production
+    networks:
+      - caddy_net
+
+networks:
+  caddy_net:
+    external: true
